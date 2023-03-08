@@ -14,6 +14,7 @@ module.exports = {
   },
   rules: {
     quotes: ['off', 'single', 'avoid-escape'],
-    'comma-dangle': [2, 'never']
+    'comma-dangle': [2, 'never'],
+    'vue/multi-word-component-names': 'off'
   }
 };
