@@ -31,7 +31,6 @@ const active = computed(() => {
 <style scoped>
 .tabs-container {
   display: flex;
-  
 }
 
 .tab-item {

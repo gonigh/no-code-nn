@@ -1,8 +1,15 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import Graph from './Graph.vue';
+import Options from './Options.vue';
+</script>
 <template>
   <div class="model-container">
-    <div class="model-left"></div>
-    <div class="model-right"></div>
+    <div class="model-left">
+      <Graph></Graph>
+    </div>
+    <div class="model-right">
+      <Options></Options>
+    </div>
   </div>
 </template>
 
@@ -10,6 +17,7 @@
 .model-container {
   display: flex;
   height: 100%;
+  position: relative;
 }
 
 .model-left {
@@ -17,7 +25,10 @@
 }
 
 .model-right {
+  height: 600px;
   width: 400px;
-  background-color: antiquewhite;
+  /* overflow: scroll; */
+  border-radius: 10px;
+  border: 2px solid var(--no-blue);
 }
 </style>

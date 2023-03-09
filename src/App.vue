@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import NoTabs from './components/NoTabs.vue';
 import { useViewStore } from './stores/ViewStore';
-import DataView from './views/DataView/index.vue';
-import ModelView from './views/ModelView/index.vue';
-import TrainingView from './views/TrainingView/index.vue';
 
 const viewStore = useViewStore();
 </script>
@@ -53,6 +50,7 @@ main {
 }
 .container {
   flex: 1;
+  padding: 6px;
 }
 .logo {
   display: block;
