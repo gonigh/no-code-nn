@@ -27,7 +27,7 @@ import Options from './Options.vue';
 .model-right {
   height: 600px;
   width: 400px;
-  /* overflow: scroll; */
+  margin-left: 6px;
   border-radius: 10px;
   border: 2px solid var(--no-blue);
 }

@@ -9,3 +9,11 @@ export interface NodeType {
   type: string;
   nodeList: Node[];
 }
+
+export interface DrawNode extends Node {
+  id: number;
+  position?: {
+    x: number;
+    y: number;
+  };
+}

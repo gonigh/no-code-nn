@@ -8,7 +8,12 @@ const optionTypeList = useInitStore().nodeInfo.map((item) => item.type);
 <template>
   <ElScrollbar style="border-radius: 10px" max-height="700">
     <ElCollapse v-model="optionTypeList">
-      <ElCollapseItem v-for="item in optionList" :key="item.type" :title="item.type" :name="item.type">
+      <ElCollapseItem
+        v-for="item in optionList"
+        :key="item.type"
+        :title="item.type"
+        :name="item.type"
+      >
         <template #title>
           <div class="option-title">
             <div class="dot"></div>
@@ -16,7 +21,12 @@ const optionTypeList = useInitStore().nodeInfo.map((item) => item.type);
           </div>
         </template>
         <div class="node-list">
-          <NoNode v-for="node in item.nodeList" :key="node.name" :name="node.name" :icon="node.icon"></NoNode>
+          <NoNode
+            v-for="node in item.nodeList"
+            :key="node.name"
+            :name="node.name"
+            :icon="node.icon"
+          ></NoNode>
         </div>
       </ElCollapseItem>
     </ElCollapse>

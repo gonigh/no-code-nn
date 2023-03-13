@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { useModelStore } from '@/stores/ModelStore';
+const modelStore = useModelStore();
 interface Props {
   icon: number;
   name: string;
@@ -18,12 +20,32 @@ const iconList = [
 ];
 
 const getImageUrl = (name: string) => {
-  return new URL(`../assets/icon/${name}.svg`, import.meta.url).href
-}
+  return new URL(`../assets/icon/${name}.svg`, import.meta.url).href;
+};
 const iconSrc = getImageUrl(iconList[props.icon]);
+
+const handleDragStart = function (e: DragEvent) {
+  console.log(e);
+  modelStore.setCloneEl(e.target as HTMLElement, e.offsetX, e.offsetY);
+  
+  // if (e.target != srcEl.value) return;
+  // cloneEl = e.target?.cloneNode(true);
+  // cloneEl.classList.add('flutter');
+  // srcEl.value.parentElement.appendChild(cloneEl);
+  // dragging = true;
+  // srcEl.value.style.opacity = '0';
+  // initial.left = e.clientX;
+  // initial.top = e.clientY;
+};
+
 </script>
 <template>
-  <div class="node-container">
+  <div
+    class="node-container"
+    ref="srcEl"
+    draggable="true"
+    @dragstart="handleDragStart"
+  >
     <img :src="iconSrc" />
     <span>{{ props.name }}</span>
   </div>
@@ -38,11 +60,23 @@ const iconSrc = getImageUrl(iconList[props.icon]);
   margin: 10px;
   padding: 6px;
   box-sizing: border-box;
-  cursor: grab;
   display: flex;
-  justify-content: left;
   align-items: center;
-  word-break: keep-all;
+}
+
+.node-container:hover {
+  cursor: grab;
+  background-color: #90cbff26;
+}
+
+.node-container:active {
+  cursor: grabbing;
+}
+
+.flutter {
+  position: absolute;
+  z-index: 9999;
+  pointer-events: none;
 }
 
 img {
