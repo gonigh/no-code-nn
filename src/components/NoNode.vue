@@ -43,39 +43,12 @@ const handleDragStart = function (e: DragEvent) {
     draggable="true"
     @dragstart="handleDragStart"
   >
-    <img :src="iconSrc" />
+    <img :src="iconSrc" draggable="false" />
     <span>{{ props.name }}</span>
   </div>
 </template>
 
 <style scoped>
-.node-container {
-  width: 170px;
-  height: 40px;
-  border-radius: 10px;
-  border: 2px solid var(--no-blue);
-  margin: 10px;
-  padding: 6px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-}
-
-.node-container:hover {
-  cursor: grab;
-  background-color: #90cbff26;
-}
-
-.node-container:active {
-  cursor: grabbing;
-}
-
-.flutter {
-  position: absolute;
-  z-index: 9999;
-  pointer-events: none;
-}
-
 img {
   margin-right: 10px;
   width: 30px;
