@@ -5,11 +5,19 @@ import { useModelStore } from '@/stores/ModelStore';
 const graph = ref();
 const modelStore = useModelStore();
 
+/**
+ * 处理放置事件，添加节点到画布
+ * @param e 拖拽事件
+ */
 const handleDrop = function (e: DragEvent) {
   modelStore.addNode(e.offsetX, e.offsetY);
 };
+
+/**
+ * 处理拖拽移动事件
+ * @param e 拖拽事件
+ */
 const handleDragOver = function (e: DragEvent) {
-  // console.log(e.offsetX,e.clientX,e.pageX);
   e.preventDefault();
 };
 
@@ -18,9 +26,12 @@ onMounted(() => {
 });
 </script>
 <template>
-  <div class="graph-container" ref="graph" @drop="handleDrop" @dragover="handleDragOver">
-
-  </div>
+  <div
+    class="graph-container"
+    ref="graph"
+    @drop="handleDrop"
+    @dragover="handleDragOver"
+  ></div>
 </template>
 
 <style scoped>

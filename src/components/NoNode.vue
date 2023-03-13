@@ -6,6 +6,8 @@ interface Props {
   name: string;
 }
 const props = defineProps<Props>();
+
+// icon名称列表
 const iconList = [
   'input-data',
   'output-data',
@@ -19,25 +21,20 @@ const iconList = [
   'tool'
 ];
 
+/**
+ * 引入图片函数
+ */
 const getImageUrl = (name: string) => {
   return new URL(`../assets/icon/${name}.svg`, import.meta.url).href;
 };
 const iconSrc = getImageUrl(iconList[props.icon]);
 
+/**
+ * 处理拖拽开始事件，记录拖拽元素信息
+ */
 const handleDragStart = function (e: DragEvent) {
-  console.log(e);
   modelStore.setCloneEl(e.target as HTMLElement, e.offsetX, e.offsetY);
-  
-  // if (e.target != srcEl.value) return;
-  // cloneEl = e.target?.cloneNode(true);
-  // cloneEl.classList.add('flutter');
-  // srcEl.value.parentElement.appendChild(cloneEl);
-  // dragging = true;
-  // srcEl.value.style.opacity = '0';
-  // initial.left = e.clientX;
-  // initial.top = e.clientY;
 };
-
 </script>
 <template>
   <div
