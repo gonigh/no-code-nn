@@ -12,6 +12,7 @@ export class Rect {
   private _height: number;
   private _in_rect: boolean;
   private _in_circle: boolean;
+
   constructor(
     selection: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     node: NodeInterface
@@ -40,11 +41,11 @@ export class Rect {
     this._rect_g = this._g
       ?.append('g')
       .attr('transform', `translate(${x},${y})`) as d3.Selection<
-      SVGGElement,
-      unknown,
-      HTMLElement,
-      any
-    >;
+        SVGGElement,
+        unknown,
+        HTMLElement,
+        any
+      >;
     this._rect_g
       ?.append('svg:image')
       .attr('xlink:href', img)
@@ -56,7 +57,7 @@ export class Rect {
       ?.append('text')
       .text(text)
       .attr('font-size', 13)
-      .attr('x', 40)
+      .attr('x', 50)
       .attr('y', 26);
     this._rect = this._rect_g
       .append('rect')
@@ -98,40 +99,46 @@ export class Rect {
     });
   }
 
+  /**
+   * 设置鼠标经过显示连接点
+   */
   setHover() {
+    const dir = [
+      [0.5, 0],
+      [1, 0.5],
+      [0.5, 1],
+      [0, 0.5]
+    ];
+    const rect = this;
+    let dots = this._rect_g
+      ?.selectAll('circle')
+      .data(dir)
+      .enter()
+      .append('circle')
+      .attr('class', 'node-circle')
+      .attr('cx', (d) => d[0] * this._width)
+      .attr('cy', (d) => d[1] * this._height)
+      .attr('r', 3)
+      .attr('fill', 'var(--no-blue)')
+      .attr('opacity', 0)
+      .on('mouseover', function (e, d) {
+        rect._in_circle = true;
+        d3.select(this).attr('opacity', 1)
+          .attr('r', 5)
+      })
+      .on('mouseout', function (e, d) {
+        rect._in_circle = false;
+        d3.select(this)
+          .attr('r', 3)
+        if (!rect._in_circle && !rect._in_rect) {
+          rect._rect_g?.selectAll('.node-circle').attr('opacity', 0);
+        }
+      });
+
     this._rect_g?.on('mouseover', () => {
-      const rect = this;
       this._in_rect = true;
       if (!this._dragging) {
-        const dir = [
-          [0.5, 0],
-          [1, 0.5],
-          [0.5, 1],
-          [0, 0.5]
-        ];
-
-        const width = 170;
-        const height = 40;
-        const dots = this._rect_g
-          ?.selectAll('circle')
-          .data(dir)
-          .enter()
-          .append('circle')
-          .attr('class', 'node-circle')
-          .attr('cx', (d) => d[0] * width)
-          .attr('cy', (d) => d[1] * height)
-          .attr('r', 3)
-          .attr('fill', 'var(--no-blue)')
-          .on('mouseover', function (e, d) {
-            console.log(1);
-            rect._in_circle = true;
-          })
-          .on('mouseout', function (e, d) {
-            rect._in_circle = false;
-            if (!rect._in_circle && !rect._in_rect) {
-              rect._rect_g?.selectAll('.node-circle').remove();
-            }
-          });
+        dots?.attr('opacity', 1)
       }
     });
 
@@ -139,7 +146,7 @@ export class Rect {
       this._in_rect = false;
       this._dragging = false;
       if (!this._in_circle && !this._in_rect) {
-        this._rect_g?.selectAll('.node-circle').remove();
+        this._rect_g?.selectAll('.node-circle').attr('opacity', 0);
       }
     });
   }
