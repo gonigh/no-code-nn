@@ -164,6 +164,25 @@ export const useInitStore = defineStore('init', {
             icon: 9
           }
         ]
+      },{
+        type: 'Option',
+        nodeList: [
+          {
+            type: 'Option',
+            name: 'add',
+            icon: 9
+          },
+          {
+            type: 'Option',
+            name: 'mul',
+            icon: 9
+          },
+          {
+            type: 'Option',
+            name: 'diff',
+            icon: 9
+          }
+        ]
       }
     ]
   })

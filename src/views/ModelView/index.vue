@@ -25,7 +25,7 @@ import Options from './Options.vue';
 }
 
 .model-right {
-  height: 600px;
+  height: 100%;
   width: 400px;
   margin-left: 6px;
   border-radius: 10px;

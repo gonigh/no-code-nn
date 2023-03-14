@@ -8,13 +8,17 @@ const viewStore = useViewStore();
 <template>
   <header>
     <img src="./assets/HDU1.jpg" />
-  </header>
-  <main>
+</header>
+<main>
     <div style="height: 40px">
       <NoTabs :active="viewStore.active" :tab-list="viewStore.viewList" />
     </div>
     <div class="container">
-      <RouterView />
+      <router-view v-slot="{ Component }">
+        <keep-alive>
+          <component :is="Component" />
+        </keep-alive>
+      </router-view>
     </div>
   </main>
 </template>
@@ -48,10 +52,12 @@ main {
   margin: 0;
   height: 100%;
 }
+
 .container {
   flex: 1;
   padding: 6px;
 }
+
 .logo {
   display: block;
   margin: 0 auto 2rem;

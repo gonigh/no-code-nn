@@ -2,18 +2,19 @@
 import NoNode from '@/components/NoNode.vue';
 
 import { useInitStore } from '@/stores/initStore';
+import { ref, onMounted } from 'vue';
 const optionList = useInitStore().nodeInfo;
 const optionTypeList = useInitStore().nodeInfo.map((item) => item.type);
+const maxHeight = ref(0);
+onMounted(() => {
+  maxHeight.value = window.innerHeight - 120;
+})
+
 </script>
 <template>
-  <ElScrollbar style="border-radius: 10px" max-height="700">
+  <ElScrollbar :max-height="maxHeight" style="border-radius: 10px">
     <ElCollapse v-model="optionTypeList">
-      <ElCollapseItem
-        v-for="item in optionList"
-        :key="item.type"
-        :title="item.type"
-        :name="item.type"
-      >
+      <ElCollapseItem v-for="item in optionList" :key="item.type" :title="item.type" :name="item.type">
         <template #title>
           <div class="option-title">
             <div class="dot"></div>
@@ -21,12 +22,7 @@ const optionTypeList = useInitStore().nodeInfo.map((item) => item.type);
           </div>
         </template>
         <div class="node-list">
-          <NoNode
-            v-for="node in item.nodeList"
-            :key="node.name"
-            :name="node.name"
-            :icon="node.icon"
-          ></NoNode>
+          <NoNode v-for="node in item.nodeList" :key="node.name" :name="node.name" :icon="node.icon"></NoNode>
         </div>
       </ElCollapseItem>
     </ElCollapse>
