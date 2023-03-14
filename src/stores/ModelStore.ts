@@ -1,4 +1,4 @@
-import type { NodeInterface } from '@/types';
+import type { EdgeInterface, NodeInterface } from '@/types';
 import { defineStore } from 'pinia';
 import * as d3 from 'd3';
 import { Rect } from '@/utils/draw';
@@ -25,11 +25,26 @@ export const useModelStore = defineStore('model', {
         text: '' as string
       },
 
+      moveEdge: {
+        from: 0 as number,
+        fromType: 0 as number,
+        fromPoint: [0, 0] as Array<number>,
+        fromRect: null as Rect | null,
+        to: 0 as number,
+        toType: 0 as number,
+        toPoint: [0, 0] as Array<number>,
+        toRect: null as Rect | null
+      },
+
       // 画布中的节点列表
       nodeList: [] as NodeInterface[],
-
+      edgeList: [] as EdgeInterface[],
       // 递增下标，创建id
-      cnt: 0
+      nodeCnt: 1,
+      edgeCnt: 1,
+
+      drawing: false,
+      tempLine: null as d3.Selection<SVGPathElement, unknown, HTMLElement, any> | null
     };
   },
   actions: {
@@ -46,6 +61,30 @@ export const useModelStore = defineStore('model', {
         .attr('height', '100%');
       const nodeG = this.svg.append('g').attr('id', 'node-g');
       const edgeG = this.svg.append('g').attr('id', 'edge-g');
+
+      const path = d3.line<Array<number>>()
+        .x(d => d[0])
+        .y(d => d[1]);
+      const drawTempLine = (points: Array<Array<number>>) => {
+        this.tempLine?.datum(points)
+          .attr('d', path);
+      }
+      this.svg.on('mousemove', e => {
+        // console.log(this.drawing)
+        console.log(e.x,e.y)
+        if (this.drawing) {
+          
+          const points = [this.moveEdge.fromPoint, [e.x, e.y]];
+          drawTempLine(points);
+        }
+      })
+
+      this.svg.on('mouseup', () => {
+        if (this.drawing) {
+          this.moveEdge.fromRect?.stopDrawing();
+          this.drawing = false;
+        }
+      })
     },
 
     /**
@@ -81,7 +120,7 @@ export const useModelStore = defineStore('model', {
     addNode: function (x: number, y: number) {
       // 加到节点列表
       const node: NodeInterface = {
-        id: this.cnt,
+        id: this.nodeCnt,
         x: x - this.moveNode.offsetX,
         y: y - this.moveNode.offsetY
       };
@@ -93,7 +132,9 @@ export const useModelStore = defineStore('model', {
           HTMLElement,
           any
         >,
-        node
+        node,
+        this.lineStart,
+        this.lineEnd
       ).create(
         x - this.moveNode.offsetX,
         y - this.moveNode.offsetY,
@@ -102,7 +143,33 @@ export const useModelStore = defineStore('model', {
       );
       this.nodeList.push(node);
       this.clearMoveEl();
-      this.cnt++;
+      this.nodeCnt++;
+    },
+
+    lineStart: function (id: number, type: number, point: Array<number>, rect: Rect) {
+      this.moveEdge.from = id;
+      this.moveEdge.fromType = type;
+      this.moveEdge.fromPoint = point;
+      this.moveEdge.fromRect = rect;
+      this.drawing = true;
+
+      this.tempLine = this.svg?.select('#edge-g').append('path').attr('id', 'edge-temp').attr('stroke-width', 1).attr('stroke', 'rgba(0,0,0,0.6)') as d3.Selection<SVGPathElement, unknown, HTMLElement, any>;
+      // console.log(this.moveEdge);
+    },
+
+    lineEnd: function (id: number, type: number, point: Array<number>, rect: Rect) {
+      this.moveEdge.to = id;
+      this.moveEdge.toType = type;
+      this.moveEdge.toPoint = point;
+      this.moveEdge.toRect = rect;
+      // console.log(this.moveEdge);
+    },
+
+    drawLine: function () {
+      let from = [];
+      let to = [];
+      const g = this.svg?.select('#edge-g');
+
     }
   }
 });

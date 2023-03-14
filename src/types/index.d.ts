@@ -6,3 +6,11 @@ export interface NodeInterface {
   x: number;
   y: number;
 }
+
+export interface EdgeInterface {
+  id: number;
+  from: number;
+  fromType: number;
+  to: number;
+  toType: number;
+}

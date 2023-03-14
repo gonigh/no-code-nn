@@ -1,32 +1,48 @@
 import * as d3 from 'd3';
-
 import type { NodeInterface } from '@/types';
-
+import type { StoreDefinition } from 'pinia';
 export class Rect {
   private _g: d3.Selection<SVGGElement, unknown, HTMLElement, any> | null;
   private _rect_g: d3.Selection<SVGGElement, unknown, HTMLElement, any> | null;
   private _rect: d3.Selection<SVGRectElement, unknown, HTMLElement, any> | null;
+  private _dots: d3.Selection<SVGCircleElement, number[], SVGGElement, unknown> | null
   private _node: NodeInterface;
   private _dragging: boolean;
+  private _drawing: boolean;
   private _width: number;
   private _height: number;
   private _in_rect: boolean;
   private _in_circle: boolean;
+  private _line_start: Function;
+  private _line_end: Function;
+  private _dir: Array<Array<number>>;
 
   constructor(
     selection: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
-    node: NodeInterface
+    node: NodeInterface,
+    startFunc: Function,
+    endFunc: Function
   ) {
     this._g = selection;
     this._rect_g = null;
     this._rect = null;
+    this._dots = null;
     this._node = node;
     node.rect = this;
     this._dragging = false;
+    this._drawing = false;
     this._width = 170;
     this._height = 40;
     this._in_circle = false;
     this._in_rect = false;
+    this._line_start = startFunc;
+    this._line_end = endFunc;
+    this._dir = [
+      [0.5, 0],
+      [1, 0.5],
+      [0.5, 1],
+      [0, 0.5]
+    ];
   }
 
   /**
@@ -71,6 +87,7 @@ export class Rect {
       .attr('ry', 10);
     this.setDrag();
     this.setHover();
+    this.setPointFunc();
     return this;
   }
 
@@ -86,11 +103,13 @@ export class Rect {
     });
 
     const drag = d3.drag().on('drag', (e, d) => {
-      const x = e.x - offsetX;
-      const y = e.y - offsetY;
-      this._rect_g?.attr('transform', `translate(${x},${y})`);
-      this._node.x = x;
-      this._node.y = y;
+      if (!this._drawing) {
+        const x = e.x - offsetX;
+        const y = e.y - offsetY;
+        this._rect_g?.attr('transform', `translate(${x},${y})`);
+        this._node.x = x;
+        this._node.y = y;
+      }
     });
     this._rect_g?.call(drag);
 
@@ -103,16 +122,10 @@ export class Rect {
    * 设置鼠标经过显示连接点
    */
   setHover() {
-    const dir = [
-      [0.5, 0],
-      [1, 0.5],
-      [0.5, 1],
-      [0, 0.5]
-    ];
     const rect = this;
-    let dots = this._rect_g
+    this._dots = this._rect_g
       ?.selectAll('circle')
-      .data(dir)
+      .data(this._dir)
       .enter()
       .append('circle')
       .attr('class', 'node-circle')
@@ -133,12 +146,12 @@ export class Rect {
         if (!rect._in_circle && !rect._in_rect) {
           rect._rect_g?.selectAll('.node-circle').attr('opacity', 0);
         }
-      });
+      }) as d3.Selection<SVGCircleElement, number[], SVGGElement, unknown>;
 
     this._rect_g?.on('mouseover', () => {
       this._in_rect = true;
       if (!this._dragging) {
-        dots?.attr('opacity', 1)
+        this._dots?.attr('opacity', 1)
       }
     });
 
@@ -149,5 +162,28 @@ export class Rect {
         this._rect_g?.selectAll('.node-circle').attr('opacity', 0);
       }
     });
+  }
+
+  setPointFunc() {
+    const rect = this;
+
+    this._dots?.on('mousedown', function (e, d) {
+      rect._drawing = true;
+      const type = rect._dir.findIndex(item => item[0] == d[0] && item[1] == d[1]);
+      const point = [rect._node.x + d[0] * rect._width / 2, rect._node.y + d[1] * rect._height / 2];
+      rect._line_start(rect._node.id, type, point, rect);
+      console.log(e, d);
+    })
+
+    this._dots?.on('mouseup', function (e, d) {
+      const type = rect._dir.findIndex(item => item[0] == d[0] && item[1] == d[1]);
+      const point = [rect._node.x + d[0] * rect._width / 2, rect._node.y + d[1] * rect._height / 2];
+      rect._line_end(rect._node.id, type, point, rect);
+      // console.log(e, d);
+    })
+  }
+
+  stopDrawing() {
+    this._drawing = false;
   }
 }
