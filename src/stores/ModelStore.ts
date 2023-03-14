@@ -1,29 +1,32 @@
 import type { NodeInterface } from '@/types';
 import { defineStore } from 'pinia';
+import * as d3 from 'd3';
+import { Rect } from '@/utils/draw';
 
 export const useModelStore = defineStore('model', {
   state: () => {
     return {
       graph: null as HTMLElement | null, // 画布
+      svg: null as d3.Selection<
+        SVGSVGElement,
+        unknown,
+        HTMLElement,
+        any
+      > | null,
 
       // 移动的节点
       moveNode: {
         nodeIndex: 0 as number,
         el: null as HTMLElement | null,
+        rect: null as Rect | null,
         offsetX: 0 as number,
-        offsetY: 0 as number
+        offsetY: 0 as number,
+        src: '' as string,
+        text: '' as string
       },
 
       // 画布中的节点列表
       nodeList: [] as NodeInterface[],
-
-      // 画布中元素移动时的初始位置
-      srcPosition: {
-        x: 0,
-        y: 0,
-        clientX: 0,
-        clientY: 0
-      },
 
       // 递增下标，创建id
       cnt: 0
@@ -36,6 +39,13 @@ export const useModelStore = defineStore('model', {
      */
     setGraph: function (el: HTMLElement) {
       this.graph = el;
+      this.svg = d3
+        .select('.graph-container')
+        .append('svg')
+        .attr('width', '100%')
+        .attr('height', '100%');
+      const nodeG = this.svg.append('g').attr('id', 'node-g');
+      const edgeG = this.svg.append('g').attr('id', 'edge-g');
     },
 
     /**
@@ -44,8 +54,9 @@ export const useModelStore = defineStore('model', {
      * @param x 鼠标点击在元素内的x偏移
      * @param y 鼠标点击在元素内的y偏移
      */
-    setCloneEl: function (el: HTMLElement, x: number, y: number) {
-      this.moveNode.el = el.cloneNode(true) as HTMLElement;
+    setCloneEl: function (x: number, y: number, src: string, text: string) {
+      this.moveNode.src = src;
+      this.moveNode.text = text;
       this.moveNode.offsetX = x;
       this.moveNode.offsetY = y;
     },
@@ -55,15 +66,11 @@ export const useModelStore = defineStore('model', {
      */
     clearMoveEl: function () {
       this.moveNode.nodeIndex = -1;
-      this.moveNode.el = null;
+      this.moveNode.rect = null;
       this.moveNode.offsetX = 0;
       this.moveNode.offsetY = 0;
-      this.srcPosition = {
-        x: 0,
-        y: 0,
-        clientX: 0,
-        clientY: 0
-      };
+      this.moveNode.text = '';
+      this.moveNode.src = '';
     },
 
     /**
@@ -72,75 +79,30 @@ export const useModelStore = defineStore('model', {
      * @param y 鼠标当前位置y
      */
     addNode: function (x: number, y: number) {
-      if (this.moveNode.el) {
-        this.moveNode.el.style.cssText = `
-        margin: 0;
-        position: absolute;
-        left:${x - this.moveNode.offsetX}px;
-        top:${y - this.moveNode.offsetY}px;`;
-        this.moveNode.el.draggable = false;
-        this.moveNode.el.id = 'node-' + this.cnt;
-        this.setNodeListener(this.moveNode.el);
-      }
-
       // 加到节点列表
-      this.nodeList.push({
+      const node: NodeInterface = {
         id: this.cnt,
-        el: this.moveNode.el as HTMLElement,
         x: x - this.moveNode.offsetX,
         y: y - this.moveNode.offsetY
-      });
+      };
 
-      // 挂载到页面
-      this.graph?.appendChild(this.moveNode.el as Node);
-      this.moveNode.el = null;
+      const rect = new Rect(
+        this.svg?.select('#node-g') as d3.Selection<
+          SVGGElement,
+          unknown,
+          HTMLElement,
+          any
+        >,
+        node
+      ).create(
+        x - this.moveNode.offsetX,
+        y - this.moveNode.offsetY,
+        this.moveNode.src,
+        this.moveNode.text
+      );
+      this.nodeList.push(node);
       this.clearMoveEl();
       this.cnt++;
-    },
-
-    /**
-     * 为节点添加监听事件
-     * @param el 元素节点
-     */
-    setNodeListener: function (el: HTMLElement) {
-      el.addEventListener('mousedown', (e) => {
-        this.moveNode.el = el;
-        this.moveNode.nodeIndex = this.nodeList.findIndex((t) => t.el == el);
-        const node = this.nodeList[this.moveNode.nodeIndex];
-
-        // 记录初始位置
-        this.srcPosition = {
-          x: node.x,
-          y: node.y,
-          clientX: e.clientX,
-          clientY: e.clientY
-        };
-      });
-
-      // 移动时修改位置
-      el.addEventListener('mousemove', (e) => {
-        if (el === this.moveNode.el) {
-          const x = this.srcPosition.x + e.clientX - this.srcPosition.clientX;
-          const y = this.srcPosition.y + e.clientY - this.srcPosition.clientY;
-          el.style.cssText = `
-          margin: 0;
-          position: absolute;
-          left:${x}px;
-          top:${y}px;`;
-          this.nodeList[this.moveNode.nodeIndex].x = x;
-          this.nodeList[this.moveNode.nodeIndex].y = y;
-        }
-      });
-
-      // 鼠标抬起结束移动
-      el.addEventListener('mouseup', () => {
-        this.clearMoveEl();
-      });
-
-      // 鼠标移出结束移动
-      el.addEventListener('mouseout', () => {
-        this.clearMoveEl();
-      });
     }
   }
 });

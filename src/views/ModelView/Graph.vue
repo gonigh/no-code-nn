@@ -41,5 +41,6 @@ onMounted(() => {
   border: 2px solid var(--no-blue);
   border-radius: 10px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 </style>

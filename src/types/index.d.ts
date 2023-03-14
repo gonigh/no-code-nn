@@ -1,6 +1,8 @@
+import type { Rect } from "@/utils/draw";
+
 export interface NodeInterface {
   id: number;
-  el: HTMLElement;
+  rect?: Rect;
   x: number;
   y: number;
 }

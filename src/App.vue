@@ -7,7 +7,7 @@ const viewStore = useViewStore();
 
 <template>
   <header>
-    <img src="./assets/logo.svg" />
+    <img src="./assets/HDU1.jpg" />
   </header>
   <main>
     <div style="height: 40px">
@@ -23,9 +23,9 @@ const viewStore = useViewStore();
 header {
   line-height: 1.5;
   max-height: 100vh;
-  height: 2rem;
+  height: 50px;
   width: 100%;
-  background-color: aliceblue;
+  /* background-color: aliceblue; */
   position: fixed;
   left: 0;
   top: 0;

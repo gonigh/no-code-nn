@@ -33,7 +33,7 @@ const iconSrc = getImageUrl(iconList[props.icon]);
  * 处理拖拽开始事件，记录拖拽元素信息
  */
 const handleDragStart = function (e: DragEvent) {
-  modelStore.setCloneEl(e.target as HTMLElement, e.offsetX, e.offsetY);
+  modelStore.setCloneEl(e.offsetX, e.offsetY, iconSrc, props.name);
 };
 </script>
 <template>
