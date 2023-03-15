@@ -16,12 +16,22 @@ export class Rect {
   private _line_update: Function;
   private _dir: Array<Array<number>>;
   public _node: NodeInterface;
+  private _zoom: {
+    k: number,
+    x: number,
+    y: number
+  };
 
   constructor(
     selection: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     node: NodeInterface,
     startFunc: Function,
-    updateFunc: Function
+    updateFunc: Function,
+    zoom: {
+      k: number,
+      x: number,
+      y: number
+    }
   ) {
     this._g = selection;
     this._rect_g = null;
@@ -37,6 +47,7 @@ export class Rect {
     this._in_rect = false;
     this._line_start = startFunc;
     this._line_update = updateFunc;
+    this._zoom = zoom
     this._dir = [
       [0.5, 0],
       [1, 0.5],
@@ -93,13 +104,26 @@ export class Rect {
   }
 
   /**
+     * 偏移准换为画布坐标
+     * @param offsetX X偏移
+     * @param offsetY Y偏移
+     * @returns 
+     */
+  getGraphXY(offsetX: number, offsetY: number) {
+    const graphX = (offsetX - this._zoom.x) / this._zoom.k;
+    const graphY = (offsetY - this._zoom.y) / this._zoom.k;
+    return [graphX, graphY];
+  }
+
+  /**
    * 设置拖拽事件
    */
   setDrag() {
     let offsetX: number, offsetY: number;
     this._rect_g?.on('mousedown', (e) => {
-      offsetX = e.offsetX - this._node.x;
-      offsetY = e.offsetY - this._node.y;
+      const [graphX, graphY] = this.getGraphXY(e.offsetX, e.offsetY);
+      offsetX = graphX - this._node.x;
+      offsetY = graphY - this._node.y;
       this._dragging = true;
     });
 

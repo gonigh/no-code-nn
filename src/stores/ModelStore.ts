@@ -14,6 +14,12 @@ export const useModelStore = defineStore('model', {
         HTMLElement,
         any
       > | null,
+      g: null as d3.Selection<
+        SVGGElement,
+        unknown,
+        HTMLElement,
+        any
+      > | null,
 
       // 移动的节点
       moveNode: {
@@ -49,7 +55,13 @@ export const useModelStore = defineStore('model', {
       nodeMap: new Map<number, Array<Edge>>(),
 
       drawing: false,
-      tempLine: null as d3.Selection<SVGPathElement, unknown, HTMLElement, any> | null
+      tempLine: null as d3.Selection<SVGPathElement, unknown, HTMLElement, any> | null,
+
+      zoom: {
+        k: 1 as number,
+        x: 0 as number,
+        y: 0 as number
+      }
     };
   },
   actions: {
@@ -64,15 +76,18 @@ export const useModelStore = defineStore('model', {
         .append('svg')
         .attr('width', '100%')
         .attr('height', '100%');
-      const nodeG = this.svg.append('g').attr('id', 'node-g');
-      const edgeG = this.svg.append('g').attr('id', 'edge-g');
+      this.g = this.svg.append('g')
+        .attr('id', 'draw-g');
+      const nodeG = this.g.append('g').attr('id', 'node-g');
+      const edgeG = this.g.append('g').attr('id', 'edge-g');
 
       const path = d3.line<Array<number>>()
         .x(d => d[0])
         .y(d => d[1]);
       this.svg.on('mousemove', e => {
         if (this.drawing) {
-          const points = [this.moveEdge.fromPoint, [e.offsetX, e.offsetY]];
+          const [x, y] = this.getGraphXY(e.offsetX, e.offsetY);
+          const points = [this.moveEdge.fromPoint, [x, y]];
           this.tempLine?.datum(points).attr('d', path);
         }
       })
@@ -81,15 +96,20 @@ export const useModelStore = defineStore('model', {
        * svg点击函数，绘制线条
        */
       this.svg.on('mousedown', (e) => {
+
+
+        // e.offsetX 和 e.offsetY 为距离现svg视图左上角距离
         if (this.drawing) {
           this.moveEdge.fromRect?.stopDrawing();
           this.drawing = false;
 
-          const clickNode = this.getClickNode(e.offsetX, e.offsetY);
+          const [x, y] = this.getGraphXY(e.offsetX, e.offsetY);
+          console.log(x, y);
+          const clickNode = this.getClickNode(x, y);
           const toNode: NodeInterface = clickNode[0] as NodeInterface;
           const toNodeIndex = clickNode[1];
           if (toNodeIndex !== -1 && toNode && toNode.id !== this.moveEdge.fromNode?.id) {
-            const type = this.getClickNodeType(toNode as NodeInterface, e.offsetX, e.offsetY);
+            const type = this.getClickNodeType(toNode as NodeInterface, x, y);
 
             this.moveEdge.to = toNode.id;
             this.moveEdge.toType = type;
@@ -123,6 +143,31 @@ export const useModelStore = defineStore('model', {
         .attr("d", arrowPath)
         .attr("fill", "var(--no-blue)")
 
+    },
+
+    /**
+     * 设置zoom区域信息
+     * @param k 放大倍率
+     * @param x 以现画布左上角为原点，svg左上角x
+     * @param y 以现画布左上角为原点，svg左上角y
+     */
+    setZoom(k: number, x: number, y: number) {
+      this.zoom.k = k;
+      this.zoom.x = x;
+      this.zoom.y = y;
+      console.log(k, x, y)
+    },
+
+    /**
+     * 偏移准换为画布坐标
+     * @param offsetX X偏移
+     * @param offsetY Y偏移
+     * @returns 
+     */
+    getGraphXY(offsetX: number, offsetY: number) {
+      const graphX = (offsetX - this.zoom.x) / this.zoom.k;
+      const graphY = (offsetY - this.zoom.y) / this.zoom.k;
+      return [graphX, graphY];
     },
 
     /**
@@ -201,10 +246,11 @@ export const useModelStore = defineStore('model', {
      */
     addNode: function (x: number, y: number) {
       // 加到节点列表
+      const [graphX, graphY] = this.getGraphXY(x - this.moveNode.offsetX, y - this.moveNode.offsetY)
       const node: NodeInterface = {
         id: this.nodeCnt,
-        x: x - this.moveNode.offsetX,
-        y: y - this.moveNode.offsetY
+        x: graphX,
+        y: graphY
       };
 
       const rect = new Rect(
@@ -216,10 +262,11 @@ export const useModelStore = defineStore('model', {
         >,
         node,
         this.lineStart,
-        this.updateLine
+        this.updateLine,
+        this.zoom
       ).create(
-        x - this.moveNode.offsetX,
-        y - this.moveNode.offsetY,
+        graphX,
+        graphY,
         this.moveNode.src,
         this.moveNode.text
       );

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';
 import { useModelStore } from '@/stores/ModelStore';
+import * as d3 from 'd3';
 
 const graph = ref();
 const modelStore = useModelStore();
@@ -23,15 +24,26 @@ const handleDragOver = function (e: DragEvent) {
 
 onMounted(() => {
   modelStore.setGraph(graph.value);
+  const width = graph.value.clientWidth, height = graph.value.clientHeight;
+  console.log([graph.value]);
+  const svg = d3.select('svg');
+  const zoomed = function ({ transform }) {
+    // console.log(transform)
+    modelStore.setZoom(transform.k,transform.x,transform.y);
+    svg.select('#draw-g').attr('transform', transform);
+  }
+  const zoom = d3.zoom()
+    .extent([[0, 0], [width, height]])
+    .scaleExtent([0.5, 4])
+    .on('zoom', zoomed);
+
+  svg.call(zoom);
 });
 </script>
 <template>
-  <div
-    class="graph-container"
-    ref="graph"
-    @drop="handleDrop"
-    @dragover="handleDragOver"
-  ></div>
+  <div class="graph-container" ref="graph" @drop="handleDrop" @dragover="handleDragOver">
+    <!-- <div class=""></div> -->
+  </div>
 </template>
 
 <style scoped>
