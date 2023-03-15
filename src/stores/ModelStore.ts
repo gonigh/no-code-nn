@@ -77,16 +77,18 @@ export const useModelStore = defineStore('model', {
         }
       })
 
+      /**
+       * svg点击函数，绘制线条
+       */
       this.svg.on('mousedown', (e) => {
         if (this.drawing) {
           this.moveEdge.fromRect?.stopDrawing();
           this.drawing = false;
 
-
-          const toNodeIndex = this.getClickNode(e.offsetX, e.offsetY);
-          if (toNodeIndex === -1) return;
-          else {
-            const toNode = this.nodeList[toNodeIndex];
+          const clickNode = this.getClickNode(e.offsetX, e.offsetY);
+          const toNode: NodeInterface = clickNode[0] as NodeInterface;
+          const toNodeIndex = clickNode[1];
+          if (toNodeIndex !== -1 && toNode && toNode.id !== this.moveEdge.fromNode?.id) {
             const type = this.getClickNodeType(toNode as NodeInterface, e.offsetX, e.offsetY);
 
             this.moveEdge.to = toNode.id;
@@ -106,6 +108,21 @@ export const useModelStore = defineStore('model', {
           this.clearMoveEdge();
         }
       })
+
+      const marker = this.svg.append('defs').append("marker")
+        .attr("id", "arrow")
+        .attr("markerUnits", "strokeWidth")
+        .attr("markerWidth", 8)
+        .attr("markerHeight", 8)
+        .attr("viewBox", "0 0 12 12")
+        .attr("refX", 9)
+        .attr("refY", 6)
+        .attr("orient", "auto")
+      var arrowPath = "M2,2 L10,6 L2,10 L6,6 L2,2";
+      marker.append("path")
+        .attr("d", arrowPath)
+        .attr("fill", "var(--no-blue)")
+
     },
 
     /**
@@ -117,12 +134,12 @@ export const useModelStore = defineStore('model', {
     getClickNode(x: number, y: number) {
       const width = 170, height = 40;
       for (let i = 0; i < this.nodeList.length; i++) {
-        const item = this.nodeList[i];
+        const item: NodeInterface = this.nodeList[i] as NodeInterface;
         if (x >= item.x && x <= item.x + width && y >= item.y && y <= item.y + height) {
-          return i;
+          return [item, i];
         }
       }
-      return -1;
+      return [null, -1];
     },
 
     /**
@@ -262,7 +279,7 @@ export const useModelStore = defineStore('model', {
 
     updateLine(nodeId: number) {
       const list = this.nodeMap.get(nodeId);
-      list?.forEach(item=>{
+      list?.forEach(item => {
         item.update();
       })
     },

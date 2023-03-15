@@ -42,6 +42,7 @@ export class Edge {
             .attr('stroke', 'var(--no-blue)')
             .attr('stroke-width', 2)
             .attr('fill', 'none')
+            .attr('marker-end','url(#arrow)')
             .attr('d', this.createPath().toString());
     }
 
