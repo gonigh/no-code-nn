@@ -1,4 +1,4 @@
-import type { Rect } from "@/utils/draw";
+import type { Rect } from "@/utils/drawRect";
 
 export interface NodeInterface {
   id: number;

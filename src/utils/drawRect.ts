@@ -1,12 +1,11 @@
 import * as d3 from 'd3';
 import type { NodeInterface } from '@/types';
-import type { StoreDefinition } from 'pinia';
+
 export class Rect {
   private _g: d3.Selection<SVGGElement, unknown, HTMLElement, any> | null;
   private _rect_g: d3.Selection<SVGGElement, unknown, HTMLElement, any> | null;
   private _rect: d3.Selection<SVGRectElement, unknown, HTMLElement, any> | null;
   private _dots: d3.Selection<SVGCircleElement, number[], SVGGElement, unknown> | null
-  private _node: NodeInterface;
   private _dragging: boolean;
   private _drawing: boolean;
   private _width: number;
@@ -14,14 +13,15 @@ export class Rect {
   private _in_rect: boolean;
   private _in_circle: boolean;
   private _line_start: Function;
-  private _line_end: Function;
+  private _line_update: Function;
   private _dir: Array<Array<number>>;
+  public _node: NodeInterface;
 
   constructor(
     selection: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     node: NodeInterface,
     startFunc: Function,
-    endFunc: Function
+    updateFunc: Function
   ) {
     this._g = selection;
     this._rect_g = null;
@@ -36,7 +36,7 @@ export class Rect {
     this._in_circle = false;
     this._in_rect = false;
     this._line_start = startFunc;
-    this._line_end = endFunc;
+    this._line_update = updateFunc;
     this._dir = [
       [0.5, 0],
       [1, 0.5],
@@ -88,6 +88,7 @@ export class Rect {
     this.setDrag();
     this.setHover();
     this.setPointFunc();
+    this.setRectFunc();
     return this;
   }
 
@@ -109,6 +110,7 @@ export class Rect {
         this._rect_g?.attr('transform', `translate(${x},${y})`);
         this._node.x = x;
         this._node.y = y;
+        this._line_update(this._node.id);
       }
     });
     this._rect_g?.call(drag);
@@ -164,26 +166,48 @@ export class Rect {
     });
   }
 
+  /**
+   * 设置连接点函数
+   */
   setPointFunc() {
     const rect = this;
-
-    this._dots?.on('mousedown', function (e, d) {
+    this._dots?.on('click', function (e, d) {
       rect._drawing = true;
       const type = rect._dir.findIndex(item => item[0] == d[0] && item[1] == d[1]);
-      const point = [rect._node.x + d[0] * rect._width / 2, rect._node.y + d[1] * rect._height / 2];
+      const point = [rect._node.x + d[0] * rect._width, rect._node.y + d[1] * rect._height];
       rect._line_start(rect._node.id, type, point, rect);
-      console.log(e, d);
-    })
-
-    this._dots?.on('mouseup', function (e, d) {
-      const type = rect._dir.findIndex(item => item[0] == d[0] && item[1] == d[1]);
-      const point = [rect._node.x + d[0] * rect._width / 2, rect._node.y + d[1] * rect._height / 2];
-      rect._line_end(rect._node.id, type, point, rect);
-      // console.log(e, d);
+      e.stopPropagation();
     })
   }
 
+  /**
+   * 终止绘画
+   */
   stopDrawing() {
     this._drawing = false;
+  }
+
+  /**
+   * 点击矩形函数
+   */
+  setRectFunc() {
+    this._rect?.on('click', e => {
+      console.log(e)
+      // if (this._drawing) {
+      //   let min = Math.sqrt(this._width * this._width + this._height * this._height);
+      //   let point;
+      //   let type;
+      //   this._dir.forEach((d, i) => {
+      //     const tmp = [this._node.x + d[0] * this._width, this._node.y + d[1] * this._height];
+      //     const dis = Math.sqrt((tmp[0] - e.offsetX) * (tmp[0] - e.offsetX) + (tmp[1] - e.offsetY) * (tmp[1] - e.offsetY));
+      //     if (dis < min) {
+      //       type = i;
+      //       point = tmp;
+      //       min = dis;
+      //     }
+      //   })
+      //   this._line_end(this._node.id, type, point, this);
+      // }
+    })
   }
 }

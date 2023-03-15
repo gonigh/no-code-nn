@@ -1,7 +1,8 @@
 import type { EdgeInterface, NodeInterface } from '@/types';
 import { defineStore } from 'pinia';
 import * as d3 from 'd3';
-import { Rect } from '@/utils/draw';
+import { Rect } from '@/utils/drawRect';
+import { Edge } from '@/utils/drawEdge';
 
 export const useModelStore = defineStore('model', {
   state: () => {
@@ -30,10 +31,12 @@ export const useModelStore = defineStore('model', {
         fromType: 0 as number,
         fromPoint: [0, 0] as Array<number>,
         fromRect: null as Rect | null,
+        fromNode: null as NodeInterface | null,
         to: 0 as number,
         toType: 0 as number,
         toPoint: [0, 0] as Array<number>,
-        toRect: null as Rect | null
+        toRect: null as Rect | null,
+        toNode: null as NodeInterface | null
       },
 
       // 画布中的节点列表
@@ -42,6 +45,8 @@ export const useModelStore = defineStore('model', {
       // 递增下标，创建id
       nodeCnt: 1,
       edgeCnt: 1,
+
+      nodeMap: new Map<number, Array<Edge>>(),
 
       drawing: false,
       tempLine: null as d3.Selection<SVGPathElement, unknown, HTMLElement, any> | null
@@ -65,26 +70,86 @@ export const useModelStore = defineStore('model', {
       const path = d3.line<Array<number>>()
         .x(d => d[0])
         .y(d => d[1]);
-      const drawTempLine = (points: Array<Array<number>>) => {
-        this.tempLine?.datum(points)
-          .attr('d', path);
-      }
       this.svg.on('mousemove', e => {
-        // console.log(this.drawing)
-        console.log(e.x,e.y)
         if (this.drawing) {
-          
-          const points = [this.moveEdge.fromPoint, [e.x, e.y]];
-          drawTempLine(points);
+          const points = [this.moveEdge.fromPoint, [e.offsetX, e.offsetY]];
+          this.tempLine?.datum(points).attr('d', path);
         }
       })
 
-      this.svg.on('mouseup', () => {
+      this.svg.on('mousedown', (e) => {
         if (this.drawing) {
           this.moveEdge.fromRect?.stopDrawing();
           this.drawing = false;
+
+
+          const toNodeIndex = this.getClickNode(e.offsetX, e.offsetY);
+          if (toNodeIndex === -1) return;
+          else {
+            const toNode = this.nodeList[toNodeIndex];
+            const type = this.getClickNodeType(toNode as NodeInterface, e.offsetX, e.offsetY);
+
+            this.moveEdge.to = toNode.id;
+            this.moveEdge.toType = type;
+            this.moveEdge.toRect = toNode.rect as Rect;
+            this.moveEdge.toNode = toNode;
+            this.addEdge();
+          }
+          this.clearMoveEdge();
+        }
+      }, true);
+
+      this.svg.on('moveout', () => {
+        if (this.drawing) {
+          this.moveEdge.fromRect?.stopDrawing();
+          this.drawing = false;
+          this.clearMoveEdge();
         }
       })
+    },
+
+    /**
+     * 搜索点击svg位置所在的节点下标，若无返回-1
+     * @param x 点击x坐标
+     * @param y 点击y坐标
+     * @returns 节点下标
+     */
+    getClickNode(x: number, y: number) {
+      const width = 170, height = 40;
+      for (let i = 0; i < this.nodeList.length; i++) {
+        const item = this.nodeList[i];
+        if (x >= item.x && x <= item.x + width && y >= item.y && y <= item.y + height) {
+          return i;
+        }
+      }
+      return -1;
+    },
+
+    /**
+     * 
+     * @param node 
+     * @param x 
+     * @param y 
+     */
+    getClickNodeType(node: NodeInterface, x: number, y: number) {
+      const width = 170, height = 40;
+      let min = Math.sqrt(width * width + height * height);
+      let type = 0;
+      const dir = [
+        [0.5, 0],
+        [1, 0.5],
+        [0.5, 1],
+        [0, 0.5]
+      ];
+      dir.forEach((d, i) => {
+        const tmp = [node.x + d[0] * width, node.y + d[1] * height];
+        const dis = Math.sqrt((tmp[0] - x) * (tmp[0] - x) + (tmp[1] - y) * (tmp[1] - y));
+        if (dis < min) {
+          type = i;
+          min = dis;
+        }
+      })
+      return type;
     },
 
     /**
@@ -103,7 +168,7 @@ export const useModelStore = defineStore('model', {
     /**
      * 使用完之后会清除克隆元素
      */
-    clearMoveEl: function () {
+    clearMoveNode: function () {
       this.moveNode.nodeIndex = -1;
       this.moveNode.rect = null;
       this.moveNode.offsetX = 0;
@@ -134,7 +199,7 @@ export const useModelStore = defineStore('model', {
         >,
         node,
         this.lineStart,
-        this.lineEnd
+        this.updateLine
       ).create(
         x - this.moveNode.offsetX,
         y - this.moveNode.offsetY,
@@ -142,7 +207,7 @@ export const useModelStore = defineStore('model', {
         this.moveNode.text
       );
       this.nodeList.push(node);
-      this.clearMoveEl();
+      this.clearMoveNode();
       this.nodeCnt++;
     },
 
@@ -151,25 +216,69 @@ export const useModelStore = defineStore('model', {
       this.moveEdge.fromType = type;
       this.moveEdge.fromPoint = point;
       this.moveEdge.fromRect = rect;
+      this.moveEdge.fromNode = this.nodeList.find(item => item.id == id) as NodeInterface;
       this.drawing = true;
 
-      this.tempLine = this.svg?.select('#edge-g').append('path').attr('id', 'edge-temp').attr('stroke-width', 1).attr('stroke', 'rgba(0,0,0,0.6)') as d3.Selection<SVGPathElement, unknown, HTMLElement, any>;
-      // console.log(this.moveEdge);
+      const path = d3.line<Array<number>>()
+        .x(d => d[0])
+        .y(d => d[1]);
+      this.tempLine = this.svg?.select('#edge-g').append('path').attr('id', 'edge-temp').attr('stroke-width', 1).attr('stroke', 'var(--no-blue)') as d3.Selection<SVGPathElement, unknown, HTMLElement, any>;
+      const points = [this.moveEdge.fromPoint, this.moveEdge.fromPoint];
+      this.tempLine?.datum(points).attr('d', path);
     },
 
-    lineEnd: function (id: number, type: number, point: Array<number>, rect: Rect) {
-      this.moveEdge.to = id;
-      this.moveEdge.toType = type;
-      this.moveEdge.toPoint = point;
-      this.moveEdge.toRect = rect;
-      // console.log(this.moveEdge);
+    /**
+     * 添加边
+     */
+    addEdge() {
+      const edge = new Edge(this.svg?.select('#edge-g') as d3.Selection<
+        SVGGElement,
+        unknown,
+        HTMLElement,
+        any
+      >, this.moveEdge.fromNode as NodeInterface, this.moveEdge.fromType, this.moveEdge.toNode as NodeInterface, this.moveEdge.toType);
+
+      edge.create();
+
+      const edgeItem: EdgeInterface = {
+        id: this.edgeCnt++,
+        from: this.moveEdge.from,
+        fromType: this.moveEdge.fromType,
+        to: this.moveEdge.to,
+        toType: this.moveEdge.toType
+      };
+      this.edgeList.push(edgeItem);
+      if (this.nodeMap.has(this.moveEdge.from)) {
+        this.nodeMap.get(this.moveEdge.from)?.push(edge);
+      } else {
+        this.nodeMap.set(this.moveEdge.from, [edge]);
+      }
+      if (this.nodeMap.has(this.moveEdge.to)) {
+        this.nodeMap.get(this.moveEdge.to)?.push(edge);
+      } else {
+        this.nodeMap.set(this.moveEdge.to, [edge]);
+      }
     },
 
-    drawLine: function () {
-      let from = [];
-      let to = [];
-      const g = this.svg?.select('#edge-g');
+    updateLine(nodeId: number) {
+      const list = this.nodeMap.get(nodeId);
+      list?.forEach(item=>{
+        item.update();
+      })
+    },
 
+    clearMoveEdge: function () {
+      this.moveEdge.from = 0;
+      this.moveEdge.fromPoint = [0, 0];
+      this.moveEdge.fromRect = null;
+      this.moveEdge.fromType = 0;
+
+      this.moveEdge.to = 0;
+      this.moveEdge.toPoint = [0, 0];
+      this.moveEdge.toRect = null;
+      this.moveEdge.toType = 0;
+
+      d3.select('#edge-temp').remove();
     }
   }
 });
