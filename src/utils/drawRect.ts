@@ -21,12 +21,14 @@ export class Rect {
     x: number,
     y: number
   };
+  private _click_rect: Function;
 
   constructor(
     selection: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
     node: NodeInterface,
     startFunc: Function,
     updateFunc: Function,
+    clickFunc: Function,
     zoom: {
       k: number,
       x: number,
@@ -54,6 +56,7 @@ export class Rect {
       [0.5, 1],
       [0, 0.5]
     ];
+    this._click_rect = clickFunc;
   }
 
   /**
@@ -73,6 +76,16 @@ export class Rect {
         HTMLElement,
         any
       >;
+    this._rect = this._rect_g
+      .append('rect')
+      .attr('id', 'node-' + this._node.id)
+      .attr('width', this._width)
+      .attr('height', this._height)
+      .attr('fill', 'white')
+      // .attr('stroke', 'var(--no-blue)')
+      // .attr('stroke-width', 2)
+      .attr('rx', 10)
+      .attr('ry', 10);
     this._rect_g
       ?.append('svg:image')
       .attr('xlink:href', img)
@@ -80,26 +93,33 @@ export class Rect {
       .attr('height', 30)
       .attr('x', 10)
       .attr('y', 5);
-    this._rect_g
+    const _text = this._rect_g
       ?.append('text')
       .text(text)
+      .style('width', '80px')
+      .style('overflow', 'ellipsis')
+      .style('white-space', 'nowrap')
+      .attr('cursor', 'default')
+      .attr('user-select', 'none')
       .attr('font-size', 13)
       .attr('x', 50)
       .attr('y', 26);
-    this._rect = this._rect_g
-      .append('rect')
-      .attr('id', 'node-' + this._node.id)
-      .attr('width', this._width)
-      .attr('height', this._height)
-      .attr('fill', 'transparent')
-      .attr('stroke', 'var(--no-blue)')
-      .attr('stroke-width', 2)
-      .attr('rx', 10)
-      .attr('ry', 10);
+
+    const textWidth = 90;
+
+    let length = _text.node()?.getComputedTextLength() as number;
+    let textContent = _text.text();
+    while (length > textWidth && textContent.length > 0) {
+      textContent = textContent.slice(0, -1);
+      _text.text(textContent + '...');
+      length = _text.node()?.getComputedTextLength() as number;
+    }
+
     this.setDrag();
     this.setHover();
     this.setPointFunc();
     this.setRectFunc();
+    
     return this;
   }
 
@@ -125,7 +145,7 @@ export class Rect {
       offsetX = graphX - this._node.x;
       offsetY = graphY - this._node.y;
       this._dragging = true;
-    });
+    }, true);
 
     const drag = d3.drag().on('drag', (e, d) => {
       if (!this._drawing) {
@@ -136,7 +156,7 @@ export class Rect {
         this._node.y = y;
         this._line_update(this._node.id);
       }
-    });
+    }, true);
     this._rect_g?.call(drag);
 
     this._rect_g?.on('mouseup', () => {
@@ -217,21 +237,7 @@ export class Rect {
   setRectFunc() {
     this._rect?.on('click', e => {
       console.log(e)
-      // if (this._drawing) {
-      //   let min = Math.sqrt(this._width * this._width + this._height * this._height);
-      //   let point;
-      //   let type;
-      //   this._dir.forEach((d, i) => {
-      //     const tmp = [this._node.x + d[0] * this._width, this._node.y + d[1] * this._height];
-      //     const dis = Math.sqrt((tmp[0] - e.offsetX) * (tmp[0] - e.offsetX) + (tmp[1] - e.offsetY) * (tmp[1] - e.offsetY));
-      //     if (dis < min) {
-      //       type = i;
-      //       point = tmp;
-      //       min = dis;
-      //     }
-      //   })
-      //   this._line_end(this._node.id, type, point, this);
-      // }
+      this._click_rect(this._node.id);
     })
   }
 }

@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, inject } from 'vue';
 import { useModelStore } from '@/stores/ModelStore';
 import * as d3 from 'd3';
 
+const createNode = inject('createNode');
 const graph = ref();
 const modelStore = useModelStore();
 
@@ -11,7 +12,7 @@ const modelStore = useModelStore();
  * @param e 拖拽事件
  */
 const handleDrop = function (e: DragEvent) {
-  modelStore.addNode(e.offsetX, e.offsetY);
+  modelStore.addNode(e.offsetX, e.offsetY, createNode as Function);
 };
 
 /**
@@ -25,10 +26,9 @@ const handleDragOver = function (e: DragEvent) {
 onMounted(() => {
   modelStore.setGraph(graph.value);
   const width = graph.value.clientWidth, height = graph.value.clientHeight;
-  console.log([graph.value]);
   const svg = d3.select('svg');
   const zoomed = function ({ transform }) {
-    // console.log(transform)
+    console.log(transform)
     modelStore.setZoom(transform.k,transform.x,transform.y);
     svg.select('#draw-g').attr('transform', transform);
   }
@@ -50,8 +50,7 @@ onMounted(() => {
 .graph-container {
   width: 100%;
   height: 100%;
-  border: 2px solid var(--no-blue);
-  border-radius: 10px;
+  background-color: rgb(243, 242, 255);
   box-sizing: border-box;
   overflow: hidden;
 }

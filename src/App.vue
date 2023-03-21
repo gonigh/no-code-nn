@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import NoTabs from './components/NoTabs.vue';
 import { useViewStore } from './stores/ViewStore';
+import { createNode } from './hooks/node';
+import { provide } from 'vue';
+
+provide('createNode',createNode);
 
 const viewStore = useViewStore();
 </script>
@@ -8,11 +12,11 @@ const viewStore = useViewStore();
 <template>
   <header>
     <img src="./assets/HDU1.jpg" />
-</header>
-<main>
-    <div style="height: 40px">
-      <NoTabs :active="viewStore.active" :tab-list="viewStore.viewList" />
-    </div>
+  </header>
+  <main>
+    <!-- <div style="height: 40px">
+        <NoTabs :active="viewStore.active" :tab-list="viewStore.viewList" />
+      </div> -->
     <div class="container">
       <router-view v-slot="{ Component }">
         <keep-alive>

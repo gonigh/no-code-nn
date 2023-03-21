@@ -7,7 +7,7 @@ const optionList = useInitStore().nodeInfo;
 const optionTypeList = useInitStore().nodeInfo.map((item) => item.type);
 const maxHeight = ref(0);
 onMounted(() => {
-  maxHeight.value = window.innerHeight - 120;
+  maxHeight.value = window.innerHeight - 90;
 })
 
 </script>

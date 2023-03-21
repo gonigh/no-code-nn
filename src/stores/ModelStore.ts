@@ -61,7 +61,9 @@ export const useModelStore = defineStore('model', {
         k: 1 as number,
         x: 0 as number,
         y: 0 as number
-      }
+      },
+
+      selectedNode: -1 as number,
     };
   },
   actions: {
@@ -96,8 +98,6 @@ export const useModelStore = defineStore('model', {
        * svg点击函数，绘制线条
        */
       this.svg.on('mousedown', (e) => {
-
-
         // e.offsetX 和 e.offsetY 为距离现svg视图左上角距离
         if (this.drawing) {
           this.moveEdge.fromRect?.stopDrawing();
@@ -106,15 +106,16 @@ export const useModelStore = defineStore('model', {
           const [x, y] = this.getGraphXY(e.offsetX, e.offsetY);
           console.log(x, y);
           const clickNode = this.getClickNode(x, y);
+          console.log(clickNode)
           const toNode: NodeInterface = clickNode[0] as NodeInterface;
           const toNodeIndex = clickNode[1];
           if (toNodeIndex !== -1 && toNode && toNode.id !== this.moveEdge.fromNode?.id) {
             const type = this.getClickNodeType(toNode as NodeInterface, x, y);
-
             this.moveEdge.to = toNode.id;
             this.moveEdge.toType = type;
             this.moveEdge.toRect = toNode.rect as Rect;
             this.moveEdge.toNode = toNode;
+            console.log(this.moveEdge);
             this.addEdge();
           }
           this.clearMoveEdge();
@@ -240,19 +241,23 @@ export const useModelStore = defineStore('model', {
     },
 
     /**
+     * 设置当前选择节点id
+     * @param id
+     */
+    setClickNode: function (id: number) {
+      this.selectedNode = id;
+      console.log(this.selectedNode)
+    },
+
+    /**
      * 画布添加节点
      * @param x 鼠标当前位置x
      * @param y 鼠标当前位置y
      */
-    addNode: function (x: number, y: number) {
+    addNode: function (x: number, y: number, createNode: Function) {
       // 加到节点列表
       const [graphX, graphY] = this.getGraphXY(x - this.moveNode.offsetX, y - this.moveNode.offsetY)
-      const node: NodeInterface = {
-        id: this.nodeCnt,
-        x: graphX,
-        y: graphY
-      };
-
+      const node: NodeInterface = createNode(this.nodeCnt, graphX, graphY, this.moveNode.text) as NodeInterface;
       const rect = new Rect(
         this.svg?.select('#node-g') as d3.Selection<
           SVGGElement,
@@ -263,6 +268,7 @@ export const useModelStore = defineStore('model', {
         node,
         this.lineStart,
         this.updateLine,
+        this.setClickNode,
         this.zoom
       ).create(
         graphX,
@@ -270,6 +276,7 @@ export const useModelStore = defineStore('model', {
         this.moveNode.src,
         this.moveNode.text
       );
+      this.selectedNode = node.id;
       this.nodeList.push(node);
       this.clearMoveNode();
       this.nodeCnt++;
@@ -295,6 +302,7 @@ export const useModelStore = defineStore('model', {
      * 添加边
      */
     addEdge() {
+      console.log('add edge');
       const edge = new Edge(this.svg?.select('#edge-g') as d3.Selection<
         SVGGElement,
         unknown,
