@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useModelStore } from '@/stores/ModelStore';
+import { getImageUrl } from '@/utils';
 const modelStore = useModelStore();
 interface Props {
   icon: number;
@@ -21,13 +22,8 @@ const iconList = [
   'tool'
 ];
 
-/**
- * 引入图片函数
- */
-const getImageUrl = (name: string) => {
-  return new URL(`../assets/icon/${name}.svg`, import.meta.url).href;
-};
-const iconSrc = getImageUrl(iconList[props.icon]);
+const baseUrl = '../assets/icon/';
+const iconSrc = getImageUrl(baseUrl + iconList[props.icon] + '.svg');
 
 /**
  * 处理拖拽开始事件，记录拖拽元素信息
@@ -37,12 +33,7 @@ const handleDragStart = function (e: DragEvent) {
 };
 </script>
 <template>
-  <div
-    class="node-container"
-    ref="srcEl"
-    draggable="true"
-    @dragstart="handleDragStart"
-  >
+  <div class="node-container" ref="srcEl" draggable="true" @dragstart="handleDragStart">
     <img :src="iconSrc" draggable="false" />
     <span>{{ props.name }}</span>
   </div>

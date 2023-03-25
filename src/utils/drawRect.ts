@@ -1,11 +1,11 @@
 import * as d3 from 'd3';
 import type { NodeInterface } from '@/types';
-
+import { getImageUrl } from '.';
 export class Rect {
   private _g: d3.Selection<SVGGElement, unknown, HTMLElement, any> | null;
   private _rect_g: d3.Selection<SVGGElement, unknown, HTMLElement, any> | null;
   private _rect: d3.Selection<SVGRectElement, unknown, HTMLElement, any> | null;
-  private _dots: d3.Selection<SVGCircleElement, number[], SVGGElement, unknown> | null
+  private _dots: d3.Selection<SVGCircleElement, number[], SVGGElement, unknown> | null;
   private _dragging: boolean;
   private _drawing: boolean;
   private _width: number;
@@ -22,6 +22,8 @@ export class Rect {
     y: number
   };
   private _click_rect: Function;
+  private _state: number;
+  private _icon: d3.Selection<d3.BaseType, unknown, HTMLElement, any> | null;
 
   constructor(
     selection: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
@@ -57,6 +59,8 @@ export class Rect {
       [0, 0.5]
     ];
     this._click_rect = clickFunc;
+    this._state = 0;
+    this._icon = null;
   }
 
   /**
@@ -82,8 +86,6 @@ export class Rect {
       .attr('width', this._width)
       .attr('height', this._height)
       .attr('fill', 'white')
-      // .attr('stroke', 'var(--no-blue)')
-      // .attr('stroke-width', 2)
       .attr('rx', 10)
       .attr('ry', 10);
     this._rect_g
@@ -115,11 +117,17 @@ export class Rect {
       length = _text.node()?.getComputedTextLength() as number;
     }
 
+    this._icon = this._rect_g?.append('svg:image')
+      .attr('width', 20)
+      .attr('height', 20)
+      .attr('x', 140)
+      .attr('y', 10);
+
     this.setDrag();
     this.setHover();
     this.setPointFunc();
     this.setRectFunc();
-
+    this.checkState();
     return this;
   }
 
@@ -253,5 +261,23 @@ export class Rect {
    */
   unactive() {
     this._rect?.attr('stroke', 'unset');
+  }
+
+  /**
+   * 状态检测，0：成功，1：警告，2：失败
+   */
+  checkState() {
+    const baseUrl = '../assets/icon/'
+    const iconList = ['success.svg', 'warning.svg', 'error.svg'];
+    this._state = 0;
+    if ('attr' in this._node) {
+      console.log(this._node.attr);
+      Object.keys(this._node.attr).forEach(key => {
+        if (this._node.attr[key] === null || this._node.attr[key] === '') {
+          this._state = 2;
+        }
+      })
+    }
+    this._icon?.attr('xlink:href', getImageUrl(baseUrl + iconList[this._state]));
   }
 }

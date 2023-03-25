@@ -11,7 +11,7 @@ const edgeInfo = ref(null);
  * 参数调整后处理事件
  */
 const handleAttrChange = function () {
-    console.log(modelStore.nodeList);
+    el.value.rect?.checkState();
 }
 
 const handleDelete = () => {
@@ -52,7 +52,7 @@ watch([() => modelStore.selectedId, () => modelStore.selectType], function () {
             <ElFormItem v-if="modelStore.selectType === 'node'" label="ID :">{{ el.id }}</ElFormItem>
             <ElFormItem v-if="modelStore.selectType === 'node'" label="name :">{{ el.type }}</ElFormItem>
             <ElFormItem v-if="el.attr && modelStore.selectType === 'node'" v-for="key in Object.keys(el.attr)" :key="key"
-                :label="key" required>
+                :label="key">
                 <ElInput v-if="typeof el.attr[key] !== 'boolean'" v-model:model-value="el.attr[key]"
                     placeholder="Please enter parameters" @change="handleAttrChange" />
                 <ElSelect v-else v-model="el.attr[key]" @change="handleAttrChange">

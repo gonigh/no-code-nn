@@ -3,6 +3,7 @@ import { onMounted, ref, inject } from 'vue';
 import { useModelStore } from '@/stores/ModelStore';
 import * as d3 from 'd3';
 import { ElMessage } from 'element-plus';
+import { getImageUrl } from '@/utils';
 
 const createNode = inject('createNode');
 const graph = ref();
@@ -49,7 +50,7 @@ const handleZoomOut = () => {
 /**
  * 放大函数
  */
- const handleZoomIn = () => {
+const handleZoomIn = () => {
   if (scale === 0) {
     ElMessage('已缩放至最小');
     return;
@@ -62,21 +63,13 @@ const handleZoomOut = () => {
 /**
  * 放大函数
  */
- const handleRestore = () => {
+const handleRestore = () => {
   scale = 3;
   const transform = d3.zoomTransform(svg.node() as Element);
   const newTransform = d3.zoomIdentity.translate(0, 0).scale(scaleList[scale]);
   svg.transition().duration(500).call(zoom.transform, newTransform);
 }
-
-
-/**
- * 引入图片函数
- */
-const getImageUrl = (name: string) => {
-  return new URL(`../../assets/icon/${name}.svg`, import.meta.url).href;
-};
-
+const baseUrl = '../assets/icon/';
 onMounted(() => {
   modelStore.setGraph(graph.value);
   const width = graph.value.clientWidth, height = graph.value.clientHeight;
@@ -101,12 +94,12 @@ onMounted(() => {
   <div class="graph-container" ref="graph" @drop="handleDrop" @dragover="handleDragOver">
     <div class="control">
       <div class="play">
-        <img :src="getImageUrl('play')" draggable="false" />
+        <img :src="getImageUrl(baseUrl + 'play.svg')" draggable="false" />
       </div>
       <div class="zoom">
-        <img :src="getImageUrl('zoom_out')" alt="放大" draggable="false" @click="handleZoomOut" />
-        <img :src="getImageUrl('zoom_in')" alt="缩小" draggable="false" @click="handleZoomIn"/>
-        <img :src="getImageUrl('restore')" alt="还原" draggable="false" @click="handleRestore" />
+        <img :src="getImageUrl(baseUrl + 'zoom_out.svg')" alt="放大" draggable="false" @click="handleZoomOut" />
+        <img :src="getImageUrl(baseUrl + 'zoom_in.svg')" alt="缩小" draggable="false" @click="handleZoomIn" />
+        <img :src="getImageUrl(baseUrl + 'restore.svg')" alt="还原" draggable="false" @click="handleRestore" />
       </div>
     </div>
   </div>
