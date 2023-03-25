@@ -70,6 +70,7 @@ export class Rect {
   create(x: number, y: number, img: string, text: string) {
     this._rect_g = this._g
       ?.append('g')
+      .attr('id', 'node-' + this._node.id)
       .attr('transform', `translate(${x},${y})`) as d3.Selection<
         SVGGElement,
         unknown,
@@ -78,7 +79,6 @@ export class Rect {
       >;
     this._rect = this._rect_g
       .append('rect')
-      .attr('id', 'node-' + this._node.id)
       .attr('width', this._width)
       .attr('height', this._height)
       .attr('fill', 'white')
@@ -236,7 +236,6 @@ export class Rect {
    */
   setRectFunc() {
     this._rect?.on('click', e => {
-      console.log(e)
       this._click_rect(this._node.id);
     })
   }

@@ -63,7 +63,8 @@ export const useModelStore = defineStore('model', {
         y: 0 as number
       },
 
-      selectedNode: -1 as number,
+      selectType: 'node' as string,
+      selectedId: -1 as number,
     };
   },
   actions: {
@@ -76,7 +77,7 @@ export const useModelStore = defineStore('model', {
       this.svg = d3
         .select('.graph-container')
         .append('svg')
-        .attr('id','draw-svg')
+        .attr('id', 'draw-svg')
         .attr('width', '100%')
         .attr('height', '100%');
       this.g = this.svg.append('g')
@@ -105,9 +106,7 @@ export const useModelStore = defineStore('model', {
           this.drawing = false;
 
           const [x, y] = this.getGraphXY(e.offsetX, e.offsetY);
-          console.log(x, y);
           const clickNode = this.getClickNode(x, y);
-          console.log(clickNode)
           const toNode: NodeInterface = clickNode[0] as NodeInterface;
           const toNodeIndex = clickNode[1];
           if (toNodeIndex !== -1 && toNode && toNode.id !== this.moveEdge.fromNode?.id) {
@@ -116,7 +115,6 @@ export const useModelStore = defineStore('model', {
             this.moveEdge.toType = type;
             this.moveEdge.toRect = toNode.rect as Rect;
             this.moveEdge.toNode = toNode;
-            console.log(this.moveEdge);
             this.addEdge();
           }
           this.clearMoveEdge();
@@ -157,7 +155,6 @@ export const useModelStore = defineStore('model', {
       this.zoom.k = k;
       this.zoom.x = x;
       this.zoom.y = y;
-      console.log(k, x, y)
     },
 
     /**
@@ -246,8 +243,8 @@ export const useModelStore = defineStore('model', {
      * @param id
      */
     setClickNode: function (id: number) {
-      this.selectedNode = id;
-      console.log(this.selectedNode)
+      this.selectType = 'node';
+      this.selectedId = id;
     },
 
     /**
@@ -277,7 +274,8 @@ export const useModelStore = defineStore('model', {
         this.moveNode.src,
         this.moveNode.text
       );
-      this.selectedNode = node.id;
+
+      this.setClickNode(node.id);
       this.nodeList.push(node);
       this.clearMoveNode();
       this.nodeCnt++;
@@ -300,19 +298,20 @@ export const useModelStore = defineStore('model', {
     },
 
     /**
+     * 设置当前选择边id
+     * @param id
+     */
+    setClickEdge: function (id: number) {
+      this.selectType = 'edge';
+      this.selectedId = id;
+      console.log('edge');
+
+    },
+
+    /**
      * 添加边
      */
     addEdge() {
-      console.log('add edge');
-      const edge = new Edge(this.svg?.select('#edge-g') as d3.Selection<
-        SVGGElement,
-        unknown,
-        HTMLElement,
-        any
-      >, this.moveEdge.fromNode as NodeInterface, this.moveEdge.fromType, this.moveEdge.toNode as NodeInterface, this.moveEdge.toType);
-
-      edge.create();
-
       const edgeItem: EdgeInterface = {
         id: this.edgeCnt++,
         from: this.moveEdge.from,
@@ -320,6 +319,16 @@ export const useModelStore = defineStore('model', {
         to: this.moveEdge.to,
         toType: this.moveEdge.toType
       };
+      const edge = new Edge(this.svg?.select('#edge-g') as d3.Selection<
+        SVGGElement,
+        unknown,
+        HTMLElement,
+        any
+      >, edgeItem, this.moveEdge.fromNode as NodeInterface, this.moveEdge.fromType, this.moveEdge.toNode as NodeInterface, this.moveEdge.toType, this.setClickEdge);
+
+      edge.create();
+
+
       this.edgeList.push(edgeItem);
       if (this.nodeMap.has(this.moveEdge.from)) {
         this.nodeMap.get(this.moveEdge.from)?.push(edge);
@@ -331,6 +340,8 @@ export const useModelStore = defineStore('model', {
       } else {
         this.nodeMap.set(this.moveEdge.to, [edge]);
       }
+
+      this.setClickEdge(edgeItem.id);
     },
 
     updateLine(nodeId: number) {
@@ -352,6 +363,28 @@ export const useModelStore = defineStore('model', {
       this.moveEdge.toType = 0;
 
       d3.select('#edge-temp').remove();
+    },
+
+    /**
+     * 删除节点
+     * @param id 节点id
+     */
+    deleteNode(id: number) {
+      const edges = this.edgeList.filter(item => item.from === id || item.to === id);
+      edges.forEach(item=>{
+        this.deleteEdge(item.id);
+      });
+      this.g?.select('#node-g').select('#node-' + id).remove();
+      this.nodeList = this.nodeList.filter(item => item.id !== id);
+    },
+
+    /**
+     * 删除边
+     * @param id 边id
+     */
+    deleteEdge(id: number) {
+      this.g?.select('#edge-g').select('#edge-' + id).remove();
+      this.edgeList = this.edgeList.filter(item => item.id !== id);
     }
   }
 });

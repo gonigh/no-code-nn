@@ -85,7 +85,7 @@ export const createNode = function (id: number, x: number, y: number, type: stri
                 }
             } as AvgPool2d;
         }
-        case 'adaptiveAvgPool2d': {
+        case 'adaptiveavgpool2d': {
             return {
                 id, x, y, type, attr: {
                     outsize: null

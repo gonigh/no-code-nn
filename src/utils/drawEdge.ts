@@ -1,8 +1,9 @@
 import * as d3 from 'd3';
-import type { NodeInterface } from "@/types";
+import type { EdgeInterface, NodeInterface } from "@/types";
 
 export class Edge {
     private _g: d3.Selection<SVGGElement, unknown, HTMLElement, any>;
+    private _edge: EdgeInterface;
     private _from_node: NodeInterface;
     private _from_type: number;
     private _from_point: Array<number>;
@@ -11,15 +12,19 @@ export class Edge {
     private _to_point: Array<number>;
     private _line: d3.Selection<SVGPathElement, unknown, HTMLElement, any> | null;
     private _dir: Array<Array<number>>;
+    private _click_edge: Function;
 
     constructor(
         selection: d3.Selection<SVGGElement, unknown, HTMLElement, any>,
+        edge: EdgeInterface,
         fromNode: NodeInterface,
         fromType: number,
         toNode: NodeInterface,
-        toType: number
+        toType: number,
+        clickFunc: Function,
     ) {
         this._g = selection;
+        this._edge = edge;
         this._from_node = fromNode;
         this._to_node = toNode;
         this._line = null;
@@ -34,16 +39,19 @@ export class Edge {
         const width = 170, height = 40;
         this._from_point = [this._from_node.x + this._dir[this._from_type][0] * width, this._from_node.y + this._dir[this._from_type][1] * height];
         this._to_point = [this._to_node.x + this._dir[this._to_type][0] * width, this._to_node.y + this._dir[this._to_type][1] * height];
-
+        this._click_edge = clickFunc;
     }
 
     create() {
         this._line = this._g.append('path')
+            .attr('id', 'edge-' + this._edge.id)
             .attr('stroke', 'var(--no-blue)')
             .attr('stroke-width', 2)
             .attr('fill', 'none')
             .attr('marker-end', 'url(#arrow)')
             .attr('d', this.createPathV2().toString());
+
+        this.setEdgeFunc();
     }
 
     /**
@@ -100,5 +108,14 @@ export class Edge {
         this._from_point = [this._from_node.x + this._dir[this._from_type][0] * width, this._from_node.y + this._dir[this._from_type][1] * height];
         this._to_point = [this._to_node.x + this._dir[this._to_type][0] * width, this._to_node.y + this._dir[this._to_type][1] * height];
         this._line?.attr('d', this.createPathV2().toString());
+    }
+
+    /**
+   * 点击连线函数
+   */
+    setEdgeFunc() {
+        this._line?.on('click', e => {
+            this._click_edge(this._edge.id);
+        })
     }
 }

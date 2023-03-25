@@ -94,7 +94,6 @@ onMounted(() => {
       return !(event.type === 'wheel' || event.type === 'dblclick');
     });
   svg.call(zoom);
-  console.log(svg);
 
 });
 </script>
