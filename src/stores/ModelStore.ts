@@ -101,6 +101,7 @@ export const useModelStore = defineStore('model', {
        */
       this.svg.on('mousedown', (e) => {
         // e.offsetX 和 e.offsetY 为距离现svg视图左上角距离
+        this.selectedId = -1;
         if (this.drawing) {
           this.moveEdge.fromRect?.stopDrawing();
           this.drawing = false;
@@ -129,6 +130,7 @@ export const useModelStore = defineStore('model', {
         }
       })
 
+      // 添加线条箭头
       const marker = this.svg.append('defs').append("marker")
         .attr("id", "arrow")
         .attr("markerUnits", "strokeWidth")

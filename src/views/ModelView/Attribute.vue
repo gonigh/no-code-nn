@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { useModelStore } from '@/stores/ModelStore';
 import type { EdgeInterface, NodeInterface } from '@/types';
-import { clippingParents } from '@popperjs/core';
 import { watch, ref } from 'vue';
 
 const modelStore = useModelStore();
@@ -15,19 +14,33 @@ const handleAttrChange = function () {
     console.log(modelStore.nodeList);
 }
 
-const handleDelete = ()=>{
-    if(modelStore.selectType === 'node'){
+const handleDelete = () => {
+    if (modelStore.selectType === 'node') {
         modelStore.deleteNode(modelStore.selectedId);
     } else {
         modelStore.deleteEdge(modelStore.selectedId);
     }
 }
 
-watch([() => modelStore.selectedId, ()=>modelStore.selectType], ([id, type]) => {
-    if(type === 'node'){
-        el.value = modelStore.nodeList.find(item => item.id === id) as NodeInterface;
+watch([() => modelStore.selectedId, () => modelStore.selectType], function () {
+    const newType = arguments[0][1];
+    const oldType = arguments[1][1];
+    const newId = arguments[0][0];
+    const oldId = arguments[1][0];
+
+    if (newType === 'node') {
+        if (newId !== -1) {
+            el.value = modelStore.nodeList.find(item => item.id === newId) as NodeInterface;
+            el.value?.rect?.active();
+        }
+        if (oldId !== -1) {
+            modelStore.nodeList.find(item => item.id === oldId)?.rect?.unactive();
+        }
     } else {
-        el.value = modelStore.edgeList.find(item => item.id === id) as EdgeInterface;
+        el.value = modelStore.edgeList.find(item => item.id === newId) as EdgeInterface;
+        if (oldType === 'node' && oldId !== -1) {
+            modelStore.nodeList.find(item => item.id === oldId)?.rect?.unactive();
+        }
     }
 })
 </script>
@@ -38,7 +51,8 @@ watch([() => modelStore.selectedId, ()=>modelStore.selectType], ([id, type]) => 
             <ElFormItem label="type :">{{ modelStore.selectType }}</ElFormItem>
             <ElFormItem v-if="modelStore.selectType === 'node'" label="ID :">{{ el.id }}</ElFormItem>
             <ElFormItem v-if="modelStore.selectType === 'node'" label="name :">{{ el.type }}</ElFormItem>
-            <ElFormItem v-if="el.attr && modelStore.selectType === 'node'" v-for="key in Object.keys(el.attr)" :key="key" :label="key" required>
+            <ElFormItem v-if="el.attr && modelStore.selectType === 'node'" v-for="key in Object.keys(el.attr)" :key="key"
+                :label="key" required>
                 <ElInput v-if="typeof el.attr[key] !== 'boolean'" v-model:model-value="el.attr[key]"
                     placeholder="Please enter parameters" @change="handleAttrChange" />
                 <ElSelect v-else v-model="el.attr[key]" @change="handleAttrChange">
@@ -46,7 +60,8 @@ watch([() => modelStore.selectedId, ()=>modelStore.selectType], ([id, type]) => 
                     <ElOption label="False" :value="false" />
                 </ElSelect>
             </ElFormItem>
-            <ElFormItem v-if="modelStore.selectType === 'edge'"  v-for="key in Object.keys(el)" :key="key" :label="`${key} :`">{{ el[key] }}</ElFormItem>
+            <ElFormItem v-if="modelStore.selectType === 'edge'" v-for="key in Object.keys(el)" :key="key"
+                :label="`${key} :`">{{ el[key] }}</ElFormItem>
             <ElFormItem>
                 <ElButton style="right: 0;" type="danger" @click="handleDelete">DELETE</ElButton>
             </ElFormItem>

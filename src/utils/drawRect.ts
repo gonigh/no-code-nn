@@ -119,7 +119,7 @@ export class Rect {
     this.setHover();
     this.setPointFunc();
     this.setRectFunc();
-    
+
     return this;
   }
 
@@ -238,5 +238,20 @@ export class Rect {
     this._rect?.on('click', e => {
       this._click_rect(this._node.id);
     })
+  }
+
+  /**
+   * 选中激活
+   */
+  active() {
+    this._rect?.attr('stroke', 'var(--no-blue)')
+      .attr('stroke-width', 2);
+  }
+
+  /**
+   * 取消激活
+   */
+  unactive() {
+    this._rect?.attr('stroke', 'unset');
   }
 }
