@@ -6,6 +6,8 @@ export interface NodeInterface {
   rect?: Rect;
   x: number;
   y: number;
+  state: number;
+  attr?: {}
 }
 
 export interface EdgeInterface {

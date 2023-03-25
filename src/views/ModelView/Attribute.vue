@@ -29,8 +29,8 @@ watch([() => modelStore.selectedId, () => modelStore.selectType], function () {
     const oldId = arguments[1][0];
 
     if (newType === 'node') {
+        el.value = modelStore.nodeList.find(item => item.id === newId) as NodeInterface;
         if (newId !== -1) {
-            el.value = modelStore.nodeList.find(item => item.id === newId) as NodeInterface;
             el.value?.rect?.active();
         }
         if (oldId !== -1) {

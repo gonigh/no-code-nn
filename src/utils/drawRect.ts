@@ -22,7 +22,6 @@ export class Rect {
     y: number
   };
   private _click_rect: Function;
-  private _state: number;
   private _icon: d3.Selection<d3.BaseType, unknown, HTMLElement, any> | null;
 
   constructor(
@@ -59,7 +58,6 @@ export class Rect {
       [0, 0.5]
     ];
     this._click_rect = clickFunc;
-    this._state = 0;
     this._icon = null;
   }
 
@@ -269,15 +267,14 @@ export class Rect {
   checkState() {
     const baseUrl = '../assets/icon/'
     const iconList = ['success.svg', 'warning.svg', 'error.svg'];
-    this._state = 0;
+    this._node.state = 0;
     if ('attr' in this._node) {
-      console.log(this._node.attr);
-      Object.keys(this._node.attr).forEach(key => {
+      Object.keys(this._node.attr as object).forEach(key => {
         if (this._node.attr[key] === null || this._node.attr[key] === '') {
-          this._state = 2;
+          this._node.state = 2;
         }
       })
     }
-    this._icon?.attr('xlink:href', getImageUrl(baseUrl + iconList[this._state]));
+    this._icon?.attr('xlink:href', getImageUrl(baseUrl + iconList[this._node.state]));
   }
 }
