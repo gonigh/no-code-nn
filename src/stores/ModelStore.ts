@@ -76,6 +76,7 @@ export const useModelStore = defineStore('model', {
       this.svg = d3
         .select('.graph-container')
         .append('svg')
+        .attr('id','draw-svg')
         .attr('width', '100%')
         .attr('height', '100%');
       this.g = this.svg.append('g')

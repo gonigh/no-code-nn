@@ -42,14 +42,14 @@ export class Edge {
             .attr('stroke', 'var(--no-blue)')
             .attr('stroke-width', 2)
             .attr('fill', 'none')
-            .attr('marker-end','url(#arrow)')
-            .attr('d', this.createPath().toString());
+            .attr('marker-end', 'url(#arrow)')
+            .attr('d', this.createPathV2().toString());
     }
 
     /**
      * 创建路径：简单版
      */
-    createPath() {
+    createPathV1() {
         const path = d3.path();
         const middleX = (this._from_point[0] + this._to_point[0]) / 2;
         const middleY = (this._from_point[1] + this._to_point[1]) / 2;
@@ -77,10 +77,28 @@ export class Edge {
         return path;
     }
 
+    /**
+     * 创建路径：简单版
+     */
+    createPathV2() {
+        const path = d3.path();
+        const width = 170, height = 40;
+        const from_cx = this._from_node.x + width / 2;
+        const from_cy = this._from_node.y + height / 2;
+        const to_cx = this._to_node.x + width / 2;
+        const to_cy = this._to_node.y + height / 2;
+        path.moveTo(this._from_point[0], this._from_point[1]);
+        let control1, control2;
+        control1 = [from_cx + (this._from_point[0] - from_cx) * 1.5, from_cy + (this._from_point[1] - from_cy) * 3];
+        control2 = [to_cx + (this._to_point[0] - to_cx) * 1.5, to_cy + (this._to_point[1] - to_cy) * 3];
+        path.bezierCurveTo(control1[0], control1[1], control2[0], control2[1], this._to_point[0], this._to_point[1]);
+        return path;
+    }
+
     update() {
         const width = 170, height = 40;
         this._from_point = [this._from_node.x + this._dir[this._from_type][0] * width, this._from_node.y + this._dir[this._from_type][1] * height];
         this._to_point = [this._to_node.x + this._dir[this._to_type][0] * width, this._to_node.y + this._dir[this._to_type][1] * height];
-        this._line?.attr('d', this.createPath().toString());
+        this._line?.attr('d', this.createPathV2().toString());
     }
 }
