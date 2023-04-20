@@ -1,7 +1,15 @@
 <script lang="ts" setup>
 import Graph from './Graph.vue';
 import Options from './Options.vue';
-import Attribute from './Attribute.vue'
+import Attribute from './Attribute.vue';
+import Submit from './Submit.vue';
+import { ref } from 'vue';
+
+const showDialog = ref(false);
+
+const handleSubmit = (show: boolean) => {
+  showDialog.value = show;
+};
 
 </script>
 <template>
@@ -10,12 +18,15 @@ import Attribute from './Attribute.vue'
       <Options></Options>
     </div>
     <div class="model-middle">
-      <Graph></Graph>
+      <Graph @submit="handleSubmit"></Graph>
     </div>
     <div class="model-right">
       <Attribute></Attribute>
     </div>
   </div>
+  <ElDialog v-model:model-value="showDialog">
+    <Submit />
+  </ElDialog>
 </template>
 
 <style scoped>
@@ -29,8 +40,8 @@ import Attribute from './Attribute.vue'
   height: 100%;
   width: 400px;
   border: 1px solid var(--no-grey);
-
 }
+
 .model-middle {
   flex: 1;
   border: 1px solid var(--no-grey);

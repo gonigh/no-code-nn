@@ -1,4 +1,4 @@
-import type { Rect } from "@/utils/drawRect";
+import type { Rect } from '@/utils/drawRect';
 
 export interface NodeInterface {
   id: number;
@@ -7,7 +7,7 @@ export interface NodeInterface {
   x: number;
   y: number;
   state: number;
-  attr?: {}
+  attr?: {};
 }
 
 export interface EdgeInterface {
@@ -18,12 +18,12 @@ export interface EdgeInterface {
   toType: number;
 }
 
-export interface Linear extends NodeInerface {
+export interface Linear extends NodeInterface {
   attr: {
     input_size: number | null;
     output_size: number | null;
     bias?: boolean;
-  }
+  };
 }
 
 export interface Conv2d extends NodeInterface {
@@ -36,7 +36,7 @@ export interface Conv2d extends NodeInterface {
     dilation?: number;
     groups?: number;
     bias?: boolean;
-  }
+  };
 }
 
 export interface Conv1d extends NodeInterface {
@@ -49,7 +49,7 @@ export interface Conv1d extends NodeInterface {
     dilation?: number;
     groups?: number;
     bias?: boolean;
-  }
+  };
 }
 
 export interface BatchNorm2d extends NodeInterface {
@@ -58,7 +58,7 @@ export interface BatchNorm2d extends NodeInterface {
     eps?: number;
     momentum?: number;
     affine?: boolean;
-  }
+  };
 }
 
 export interface BatchNorm1d extends NodeInterface {
@@ -67,21 +67,21 @@ export interface BatchNorm1d extends NodeInterface {
     eps?: number;
     momentum?: number;
     affine?: boolean;
-  }
+  };
 }
 
 export interface Relu extends NodeInterface {
   attr: {
     inplace?: boolean;
-  }
+  };
 }
 
 export interface Sigmoid extends NodeInterface {
-  attr: {}
+  attr: {};
 }
 
 export interface Tanh extends NodeInterface {
-  attr: {}
+  attr: {};
 }
 
 export interface MaxPool2d extends NodeInterface {
@@ -92,7 +92,7 @@ export interface MaxPool2d extends NodeInterface {
     dilation?: number;
     return_indices?: boolean;
     ceil_mode?: boolean;
-  }
+  };
 }
 
 export interface MaxPool1d extends NodeInterface {
@@ -103,7 +103,7 @@ export interface MaxPool1d extends NodeInterface {
     dilation?: number;
     return_indices?: boolean;
     ceil_mode?: boolean;
-  }
+  };
 }
 
 export interface AvgPool2d extends NodeInterface {
@@ -114,18 +114,18 @@ export interface AvgPool2d extends NodeInterface {
     ceil_mode?: boolean;
     count_include_pad?: boolean;
     divisor_override?: number;
-  }
+  };
 }
 
 export interface AdaptiveAvgPool2d extends NodeInterface {
   attr: {
-    outsize: number | number[] | null
-  }
+    outsize: number | number[] | null;
+  };
 }
 
 export interface Dropout extends NodeInterface {
   attr: {
     p?: number;
     inplace?: boolean;
-  }
+  };
 }

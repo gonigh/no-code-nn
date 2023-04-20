@@ -5,15 +5,12 @@ import * as d3 from 'd3';
 import { ElMessage } from 'element-plus';
 import { getImageUrl } from '@/utils';
 
+const emits = defineEmits(['submit']);
+
 const createNode = inject('createNode');
 const graph = ref();
 const modelStore = useModelStore();
-let svg: d3.Selection<
-  SVGSVGElement,
-  unknown,
-  HTMLElement,
-  any
->;
+let svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
 let zoom: d3.ZoomBehavior<Element, unknown>;
 let scale = 3;
 const scaleList = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3];
@@ -35,7 +32,7 @@ const handleDragOver = function (e: DragEvent) {
 };
 
 /**
- * 放大函数
+ * 放大画布
  */
 const handleZoomOut = () => {
   if (scale === scaleList.length - 1) {
@@ -43,12 +40,14 @@ const handleZoomOut = () => {
     return;
   }
   const transform = d3.zoomTransform(svg.node() as Element);
-  const newTransform = d3.zoomIdentity.translate(transform.x, transform.y).scale(scaleList[++scale]);
+  const newTransform = d3.zoomIdentity
+    .translate(transform.x, transform.y)
+    .scale(scaleList[++scale]);
   svg.transition().duration(500).call(zoom.transform, newTransform);
-}
+};
 
 /**
- * 放大函数
+ * 缩小画布
  */
 const handleZoomIn = () => {
   if (scale === 0) {
@@ -56,50 +55,84 @@ const handleZoomIn = () => {
     return;
   }
   const transform = d3.zoomTransform(svg.node() as Element);
-  const newTransform = d3.zoomIdentity.translate(transform.x, transform.y).scale(scaleList[--scale]);
+  const newTransform = d3.zoomIdentity
+    .translate(transform.x, transform.y)
+    .scale(scaleList[--scale]);
   svg.transition().duration(500).call(zoom.transform, newTransform);
-}
+};
 
 /**
- * 放大函数
+ * 回归原始尺寸
  */
 const handleRestore = () => {
   scale = 3;
-  const transform = d3.zoomTransform(svg.node() as Element);
   const newTransform = d3.zoomIdentity.translate(0, 0).scale(scaleList[scale]);
   svg.transition().duration(500).call(zoom.transform, newTransform);
+};
+
+const handleSubmit = () => {
+  emits('submit', true);
 }
+
 const baseUrl = '../assets/icon/';
 onMounted(() => {
   modelStore.setGraph(graph.value);
-  const width = graph.value.clientWidth, height = graph.value.clientHeight;
+  const width = graph.value.clientWidth,
+    height = graph.value.clientHeight;
   svg = d3.select('#draw-svg');
 
   const zoomed = function ({ transform }) {
     modelStore.setZoom(transform.k, transform.x, transform.y);
     svg.select('#draw-g').attr('transform', transform);
-  }
-  zoom = d3.zoom()
-    .extent([[0, 0], [width, height]])
+  };
+  zoom = d3
+    .zoom()
+    .extent([
+      [0, 0],
+      [width, height]
+    ])
     .scaleExtent([0.5, 4])
     .on('zoom', zoomed)
     .filter((event: Event) => {
       return !(event.type === 'wheel' || event.type === 'dblclick');
     });
   svg.call(zoom);
-
 });
 </script>
 <template>
-  <div class="graph-container" ref="graph" @drop="handleDrop" @dragover="handleDragOver">
+  <div
+    class="graph-container"
+    ref="graph"
+    @drop="handleDrop"
+    @dragover="handleDragOver"
+  >
     <div class="control">
       <div class="play">
-        <img :src="getImageUrl(baseUrl + 'play.svg')" draggable="false" />
+        <img
+          :src="getImageUrl(baseUrl + 'play.svg')"
+          draggable="false"
+          @click="handleSubmit"
+        />
       </div>
       <div class="zoom">
-        <img :src="getImageUrl(baseUrl + 'zoom_out.svg')" alt="放大" draggable="false" @click="handleZoomOut" />
-        <img :src="getImageUrl(baseUrl + 'zoom_in.svg')" alt="缩小" draggable="false" @click="handleZoomIn" />
-        <img :src="getImageUrl(baseUrl + 'restore.svg')" alt="还原" draggable="false" @click="handleRestore" />
+        <img
+          :src="getImageUrl(baseUrl + 'zoom_out.svg')"
+          alt="放大"
+          draggable="false"
+          @click="handleZoomOut"
+        />
+        <img
+          :src="getImageUrl(baseUrl + 'zoom_in.svg')"
+          alt="缩小"
+          draggable="false"
+          @click="handleZoomIn"
+        />
+        <img
+          :src="getImageUrl(baseUrl + 'restore.svg')"
+          alt="还原"
+          draggable="false"
+          @click="handleRestore"
+        />
       </div>
     </div>
   </div>
