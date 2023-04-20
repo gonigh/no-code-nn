@@ -2,6 +2,7 @@ import type { Rect } from '@/utils/drawRect';
 
 export interface NodeInterface {
   id: number;
+  name: string;
   type: string;
   rect?: Rect;
   x: number;

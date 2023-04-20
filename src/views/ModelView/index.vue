@@ -4,11 +4,31 @@ import Options from './Options.vue';
 import Attribute from './Attribute.vue';
 import Submit from './Submit.vue';
 import { ref } from 'vue';
+import { useModelStore } from '@/stores/ModelStore';
+import { ElMessage } from 'element-plus';
 
 const showDialog = ref(false);
+const modelStore = useModelStore();
 
 const handleSubmit = (show: boolean) => {
-  showDialog.value = show;
+  let temp = true;
+  if(modelStore.nodeList.length <= 1 || modelStore.edgeList.length < 1) {
+    ElMessage({
+      message: 'Abnormal number of nodes',
+      type: 'error'
+    });
+    temp = false;
+  }
+  modelStore.nodeList.forEach(node=>{
+    if(node.state !== 0) {
+      ElMessage({
+        message: 'Abnormal node status',
+        type: 'error'
+      })
+      temp = false;
+    }
+  })
+  showDialog.value = temp;
 };
 
 </script>
@@ -25,7 +45,7 @@ const handleSubmit = (show: boolean) => {
     </div>
   </div>
   <ElDialog v-model:model-value="showDialog" title="Model Code">
-    <Submit />
+    <Submit :show="showDialog" />
   </ElDialog>
 </template>
 

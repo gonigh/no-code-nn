@@ -20,7 +20,15 @@ const scaleList = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3];
  * @param e 拖拽事件
  */
 const handleDrop = function (e: DragEvent) {
-  modelStore.addNode(e.offsetX, e.offsetY, createNode as Function);
+  const [x, y] = modelStore.getGraphXY(e.offsetX - modelStore.moveNode.offsetX, e.offsetY - modelStore.moveNode.offsetY)
+  
+  
+  if (modelStore.nodeType === 'model') {
+    modelStore.addModel(modelStore.moveNode.text, x, y, createNode as Function);
+  } else {
+    modelStore.addNode(x, y, modelStore.nodeCnt, modelStore.moveNode.src, modelStore.moveNode.text , createNode as Function);
+  }
+  
 };
 
 /**

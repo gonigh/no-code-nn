@@ -19,16 +19,17 @@ export const createNode = function (
   id: number,
   x: number,
   y: number,
-  type: string,
+  name: string,
   state: number
 ) {
-  switch (type) {
+  switch (name) {
     case 'input': {
       return {
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name,
         state
       } as NodeInterface;
     }
@@ -37,7 +38,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state
       } as NodeInterface;
     }
@@ -46,7 +48,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           input_size: null,
@@ -60,7 +63,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           in_channels: null,
@@ -79,7 +83,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           in_channels: null,
@@ -98,7 +103,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           num_features: null,
@@ -113,7 +119,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           num_features: null,
@@ -128,7 +135,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           inplace: false
@@ -140,7 +148,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {}
       } as Sigmoid;
@@ -150,7 +159,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {}
       } as Tanh;
@@ -160,7 +170,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           kernel_size: null,
@@ -177,7 +188,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           kernel_size: null,
@@ -194,7 +206,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           kernel_size: null,
@@ -210,7 +223,8 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           outsize: null
@@ -222,13 +236,57 @@ export const createNode = function (
         id,
         x,
         y,
-        type,
+        type: 'layer',
+        name: name,
         state,
         attr: {
           p: 0.5,
           inplace: false
         }
       } as Dropout;
+    }
+    case 'op_view': {
+      return {
+        id,
+        x,
+        y,
+        type: 'option',
+        name,
+        state,
+        attr: {
+          h: null,
+          w: null
+        }
+      }
+    }
+    case 'op_add': {
+      return {
+        id,
+        x,
+        y,
+        type: 'option',
+        name,
+        state
+      }
+    }
+    case 'op_diff': {
+      return {
+        id,
+        x,
+        y,
+        type: 'option',
+        name,
+        state
+      }
+    }case 'op_mul': {
+      return {
+        id,
+        x,
+        y,
+        type: 'option',
+        name,
+        state
+      }
     }
   }
 };

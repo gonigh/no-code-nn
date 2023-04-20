@@ -1,6 +1,17 @@
 import type { EdgeInterface, NodeInterface } from ".";
 
-interface SubmitParam {
-    nodes: NodeInterface[];
-    edges: EdgeInterface[];
+export interface NodeParam {
+    id: number;
+    name: string;
+    type: string;
+    attr?: {};
+}
+
+export interface EdgeParam {
+    from: number;
+    to: number;
+}
+export interface SubmitParam {
+    nodes: NodeParam[];
+    edges: EdgeParam[];
 }

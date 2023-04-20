@@ -1,35 +1,24 @@
 <script lang="ts" setup>
 import { useModelStore } from '@/stores/ModelStore';
 import { getImageUrl } from '@/utils';
+import initData from '@/assets/init';
+
 const modelStore = useModelStore();
 interface Props {
   icon: number;
   name: string;
+  type: string;
 }
 const props = defineProps<Props>();
 
-// icon名称列表
-const iconList = [
-  'input-data',
-  'output-data',
-  'sequence',
-  'neural-network',
-  'normal',
-  'activate',
-  'samples',
-  'random',
-  'linear',
-  'tool'
-];
-
 const baseUrl = '../assets/icon/';
-const iconSrc = getImageUrl(baseUrl + iconList[props.icon] + '.svg');
+const iconSrc = getImageUrl(baseUrl +initData.iconList[props.icon] + '.svg');
 
 /**
  * 处理拖拽开始事件，记录拖拽元素信息
  */
 const handleDragStart = function (e: DragEvent) {
-  modelStore.setCloneEl(e.offsetX, e.offsetY, iconSrc, props.name);
+  modelStore.setCloneEl(e.offsetX, e.offsetY, iconSrc, props.name, props.type);
 };
 </script>
 <template>

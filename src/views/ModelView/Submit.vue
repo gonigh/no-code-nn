@@ -1,8 +1,11 @@
 <script lang="ts" setup>
 import { submitAPI } from '@/apis';
-import type { SubmitParam } from "@/types/api";
+import type { SubmitParam, NodeParam, EdgeParam } from "@/types/api";
 import { useModelStore } from '@/stores/ModelStore';
 import { onMounted, ref } from 'vue';
+import type { NodeInterface } from '@/types';
+
+const props = defineProps<{show: boolean}>();
 
 const netCode = ref(`
 a=1
@@ -37,9 +40,27 @@ for i in range(10):
 const modelStore = useModelStore();
 const loading = ref(true);
 onMounted(() => {
+  const nodes: NodeParam[] = modelStore.nodeList.map(item=>{
+    const node: NodeParam = {
+      id: item.id,
+      name: item.name,
+      type: item.type
+    }
+    if(item.attr) {
+      node.attr = item.attr;
+    }
+    return node;
+  });
+  const edges: EdgeParam[] = modelStore.edgeList.map(item=>{
+    const edge: EdgeParam = {
+      from: item.from,
+      to: item.to
+    }
+    return edge;
+  });
   const params: SubmitParam = {
-    nodes: modelStore.nodeList,
-    edges: modelStore.edgeList
+    nodes,
+    edges
   }
   submitAPI(params).then(res => {
     netCode.value = res.code;

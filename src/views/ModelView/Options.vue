@@ -1,10 +1,9 @@
 <script lang="ts" setup>
 import NoNode from '@/components/NoNode.vue';
-
-import { useInitStore } from '@/stores/initStore';
+import initData from '@/assets/init';
 import { ref, onMounted } from 'vue';
-const optionList = useInitStore().nodeInfo;
-const optionTypeList = useInitStore().nodeInfo.map((item) => item.type);
+const optionList = initData.nodeInfo;
+const optionTypeList = initData.nodeInfo.map((item) => item.type);
 const maxHeight = ref(0);
 onMounted(() => {
   maxHeight.value = window.innerHeight - 90;
@@ -22,7 +21,7 @@ onMounted(() => {
           </div>
         </template>
         <div class="node-list">
-          <NoNode v-for="node in item.nodeList" :key="node.name" :name="node.name" :icon="node.icon"></NoNode>
+          <NoNode v-for="node in item.nodeList" :key="node.name" :name="node.name" :icon="node.icon" :type="node.type"></NoNode>
         </div>
       </ElCollapseItem>
     </ElCollapse>

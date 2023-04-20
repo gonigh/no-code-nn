@@ -3,6 +3,8 @@ import { defineStore } from 'pinia';
 import * as d3 from 'd3';
 import { Rect } from '@/utils/drawRect';
 import { Edge } from '@/utils/drawEdge';
+import initData from '@/assets/init';
+import { getImageUrl } from '@/utils';
 
 export const useModelStore = defineStore('model', {
   state: () => {
@@ -65,6 +67,8 @@ export const useModelStore = defineStore('model', {
 
       selectType: 'node' as string,
       selectedId: -1 as number,
+
+      nodeType: '' as string
     };
   },
   actions: {
@@ -116,7 +120,7 @@ export const useModelStore = defineStore('model', {
             this.moveEdge.toType = type;
             this.moveEdge.toRect = toNode.rect as Rect;
             this.moveEdge.toNode = toNode;
-            this.addEdge();
+            this.addEdge(this.moveEdge.from, this.moveEdge.fromType, this.moveEdge.to, this.moveEdge.toType);
           }
           this.clearMoveEdge();
         }
@@ -221,11 +225,12 @@ export const useModelStore = defineStore('model', {
      * @param x 鼠标点击在元素内的x偏移
      * @param y 鼠标点击在元素内的y偏移
      */
-    setCloneEl: function (x: number, y: number, src: string, text: string) {
+    setCloneEl: function (x: number, y: number, src: string, text: string, type: string) {
       this.moveNode.src = src;
       this.moveNode.text = text;
       this.moveNode.offsetX = x;
       this.moveNode.offsetY = y;
+      this.nodeType = type;
     },
 
     /**
@@ -238,6 +243,7 @@ export const useModelStore = defineStore('model', {
       this.moveNode.offsetY = 0;
       this.moveNode.text = '';
       this.moveNode.src = '';
+      this.nodeType = '';
     },
 
     /**
@@ -254,10 +260,12 @@ export const useModelStore = defineStore('model', {
      * @param x 鼠标当前位置x
      * @param y 鼠标当前位置y
      */
-    addNode: function (x: number, y: number, createNode: Function) {
+    addNode: function (x: number, y: number, id: number, icon: string, text: string, createNode: Function, attr?: Object) {
       // 加到节点列表
-      const [graphX, graphY] = this.getGraphXY(x - this.moveNode.offsetX, y - this.moveNode.offsetY)
-      const node: NodeInterface = createNode(this.nodeCnt, graphX, graphY, this.moveNode.text) as NodeInterface;
+      const node: NodeInterface = createNode(this.nodeCnt, x, y, text) as NodeInterface;
+      if (attr) {
+        node.attr = attr;
+      }
       const rect = new Rect(
         this.svg?.select('#node-g') as d3.Selection<
           SVGGElement,
@@ -271,10 +279,10 @@ export const useModelStore = defineStore('model', {
         this.setClickNode,
         this.zoom
       ).create(
-        graphX,
-        graphY,
-        this.moveNode.src,
-        this.moveNode.text
+        x,
+        y,
+        icon,
+        text
       );
 
       this.setClickNode(node.id);
@@ -306,41 +314,42 @@ export const useModelStore = defineStore('model', {
     setClickEdge: function (id: number) {
       this.selectType = 'edge';
       this.selectedId = id;
-      console.log('edge');
-
     },
 
     /**
      * 添加边
      */
-    addEdge() {
+    addEdge(from: number, fromType: number, to: number, toType: number) {
       const edgeItem: EdgeInterface = {
         id: this.edgeCnt++,
-        from: this.moveEdge.from,
-        fromType: this.moveEdge.fromType,
-        to: this.moveEdge.to,
-        toType: this.moveEdge.toType
+        from: from,
+        fromType: fromType,
+        to: to,
+        toType: toType
       };
+      
+      const fromNode = this.nodeList.find(item=>item.id === from);
+      const toNode = this.nodeList.find(item=>item.id === to);
       const edge = new Edge(this.svg?.select('#edge-g') as d3.Selection<
         SVGGElement,
         unknown,
         HTMLElement,
         any
-      >, edgeItem, this.moveEdge.fromNode as NodeInterface, this.moveEdge.fromType, this.moveEdge.toNode as NodeInterface, this.moveEdge.toType, this.setClickEdge);
+      >, edgeItem, fromNode as NodeInterface, fromType, toNode as NodeInterface, toType, this.setClickEdge);
 
       edge.create();
 
 
       this.edgeList.push(edgeItem);
-      if (this.nodeMap.has(this.moveEdge.from)) {
-        this.nodeMap.get(this.moveEdge.from)?.push(edge);
+      if (this.nodeMap.has(from)) {
+        this.nodeMap.get(from)?.push(edge);
       } else {
-        this.nodeMap.set(this.moveEdge.from, [edge]);
+        this.nodeMap.set(from, [edge]);
       }
-      if (this.nodeMap.has(this.moveEdge.to)) {
-        this.nodeMap.get(this.moveEdge.to)?.push(edge);
+      if (this.nodeMap.has(to)) {
+        this.nodeMap.get(to)?.push(edge);
       } else {
-        this.nodeMap.set(this.moveEdge.to, [edge]);
+        this.nodeMap.set(to, [edge]);
       }
 
       this.setClickEdge(edgeItem.id);
@@ -373,7 +382,7 @@ export const useModelStore = defineStore('model', {
      */
     deleteNode(id: number) {
       const edges = this.edgeList.filter(item => item.from === id || item.to === id);
-      edges.forEach(item=>{
+      edges.forEach(item => {
         this.deleteEdge(item.id);
       });
       this.g?.select('#node-g').select('#node-' + id).remove();
@@ -387,6 +396,30 @@ export const useModelStore = defineStore('model', {
     deleteEdge(id: number) {
       this.g?.select('#edge-g').select('#edge-' + id).remove();
       this.edgeList = this.edgeList.filter(item => item.id !== id);
+    },
+
+    addModel(name: string, x: number, y: number, createNode: Function) {
+      const model = initData.modelInfo.find(item => item.name === name);
+      const stepY = 80;
+      const stepX = 400;
+      const maxCol = 10; // 每列最多10个
+      model?.nodeList.forEach((node, i) => {
+        const icon: number = [...initData.nodeInfo[0].nodeList, ...initData.nodeInfo[1].nodeList].find(item => item.name === node.name)?.icon as number;
+        const baseUrl = '../assets/icon/';
+        const iconSrc = getImageUrl(baseUrl + initData.iconList[icon] + '.svg');
+        const row = Math.floor(i % maxCol);
+        const col = Math.floor(i / maxCol);
+        this.addNode(x + col * stepX, y + row * stepY, this.nodeCnt, iconSrc, node.name, createNode, node.attr);
+      })
+
+      model?.edgeList.forEach((edge, i) => {
+        if((i + 1) % maxCol === 0) {
+          this.addEdge(edge.from, 1, edge.to, 3);
+        } else {
+          this.addEdge(edge.from, 2, edge.to, 0);
+        }
+        
+      });
     }
   }
 });
