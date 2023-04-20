@@ -24,7 +24,7 @@ const handleSubmit = (show: boolean) => {
       <Attribute></Attribute>
     </div>
   </div>
-  <ElDialog v-model:model-value="showDialog">
+  <ElDialog v-model:model-value="showDialog" title="Model Code">
     <Submit />
   </ElDialog>
 </template>
