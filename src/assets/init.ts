@@ -58,19 +58,19 @@ export default {
                     icon: 4
                 },
                 {
-                    type: 'layer',
+                    type: 'activation',
                     name: 'relu',
                     attrs: {},
                     icon: 5
                 },
                 {
-                    type: 'layer',
+                    type: 'activation',
                     name: 'sigmoid',
                     attrs: {},
                     icon: 5
                 },
                 {
-                    type: 'layer',
+                    type: 'activation',
                     name: 'tanh',
                     attrs: {},
                     icon: 5

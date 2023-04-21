@@ -135,7 +135,7 @@ export const createNode = function (
         id,
         x,
         y,
-        type: 'layer',
+        type: 'activation',
         name: name,
         state,
         attr: {
@@ -148,7 +148,7 @@ export const createNode = function (
         id,
         x,
         y,
-        type: 'layer',
+        type: 'activation',
         name: name,
         state,
         attr: {}
@@ -159,7 +159,7 @@ export const createNode = function (
         id,
         x,
         y,
-        type: 'layer',
+        type: 'activation',
         name: name,
         state,
         attr: {}

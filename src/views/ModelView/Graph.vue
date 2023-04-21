@@ -24,9 +24,9 @@ const handleDrop = function (e: DragEvent) {
   
   
   if (modelStore.nodeType === 'model') {
-    modelStore.addModel(modelStore.moveNode.text, x, y, createNode as Function);
+    modelStore.addModel(x, y, modelStore.moveNode.text, createNode as Function);
   } else {
-    modelStore.addNode(x, y, modelStore.nodeCnt, modelStore.moveNode.src, modelStore.moveNode.text , createNode as Function);
+    modelStore.addNode(x, y, modelStore.moveNode.text , createNode as Function);
   }
   
 };

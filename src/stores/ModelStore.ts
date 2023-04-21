@@ -260,9 +260,12 @@ export const useModelStore = defineStore('model', {
      * @param x 鼠标当前位置x
      * @param y 鼠标当前位置y
      */
-    addNode: function (x: number, y: number, id: number, icon: string, text: string, createNode: Function, attr?: Object) {
+    addNode: function (x: number, y: number, text: string, createNode: Function, attr?: Object) {
       // 加到节点列表
       const node: NodeInterface = createNode(this.nodeCnt, x, y, text) as NodeInterface;
+      const icon: number = [...initData.nodeInfo[0].nodeList, ...initData.nodeInfo[1].nodeList].find(item => item.name === node.name)?.icon as number;
+      const baseUrl = '../assets/icon/';
+      const iconSrc = getImageUrl(baseUrl + initData.iconList[icon] + '.svg');
       if (attr) {
         node.attr = attr;
       }
@@ -281,7 +284,7 @@ export const useModelStore = defineStore('model', {
       ).create(
         x,
         y,
-        icon,
+        iconSrc,
         text
       );
 
@@ -330,6 +333,7 @@ export const useModelStore = defineStore('model', {
       
       const fromNode = this.nodeList.find(item=>item.id === from);
       const toNode = this.nodeList.find(item=>item.id === to);
+      
       const edge = new Edge(this.svg?.select('#edge-g') as d3.Selection<
         SVGGElement,
         unknown,
@@ -398,25 +402,23 @@ export const useModelStore = defineStore('model', {
       this.edgeList = this.edgeList.filter(item => item.id !== id);
     },
 
-    addModel(name: string, x: number, y: number, createNode: Function) {
+    addModel(x: number, y: number, name: string, createNode: Function) {
       const model = initData.modelInfo.find(item => item.name === name);
+      const initCnt = this.nodeCnt - 1;
       const stepY = 80;
       const stepX = 400;
       const maxCol = 10; // 每列最多10个
       model?.nodeList.forEach((node, i) => {
-        const icon: number = [...initData.nodeInfo[0].nodeList, ...initData.nodeInfo[1].nodeList].find(item => item.name === node.name)?.icon as number;
-        const baseUrl = '../assets/icon/';
-        const iconSrc = getImageUrl(baseUrl + initData.iconList[icon] + '.svg');
         const row = Math.floor(i % maxCol);
         const col = Math.floor(i / maxCol);
-        this.addNode(x + col * stepX, y + row * stepY, this.nodeCnt, iconSrc, node.name, createNode, node.attr);
+        this.addNode(x + col * stepX, y + row * stepY, node.name, createNode, node.attr);
       })
 
       model?.edgeList.forEach((edge, i) => {
         if((i + 1) % maxCol === 0) {
-          this.addEdge(edge.from, 1, edge.to, 3);
+          this.addEdge(initCnt + edge.from, 1, initCnt + edge.to, 3);
         } else {
-          this.addEdge(edge.from, 2, edge.to, 0);
+          this.addEdge(initCnt + edge.from, 2, initCnt + edge.to, 0);
         }
         
       });

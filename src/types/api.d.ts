@@ -12,6 +12,6 @@ export interface EdgeParam {
     to: number;
 }
 export interface SubmitParam {
-    nodes: NodeParam[];
-    edges: EdgeParam[];
+    node: NodeParam[];
+    edge: EdgeParam[];
 }
