@@ -6,8 +6,10 @@ import Submit from './Submit.vue';
 import { ref } from 'vue';
 import { useModelStore } from '@/stores/ModelStore';
 import { ElMessage } from 'element-plus';
+import NoDrawer from '@/components/NoDrawer.vue';
 
 const showDialog = ref(false);
+const showDrawer = ref(true);
 const modelStore = useModelStore();
 
 const handleSubmit = (show: boolean) => {
@@ -39,6 +41,7 @@ const handleSubmit = (show: boolean) => {
     </div>
     <div class="model-middle">
       <Graph @submit="handleSubmit"></Graph>
+      <NoDrawer></NoDrawer>
     </div>
     <div class="model-right">
       <Attribute></Attribute>
