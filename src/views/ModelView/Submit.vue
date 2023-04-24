@@ -3,10 +3,12 @@ import { downloadAPI, submitAPI } from '@/apis';
 import type { SubmitParam, NodeParam, EdgeParam } from "@/types/api";
 import { useModelStore } from '@/stores/ModelStore';
 import { onMounted, ref } from 'vue';
+import { useConfigStore } from '@/stores/configStore';
 
 const props = defineProps<{ show: boolean }>();
 
 const netCode = ref('');
+const configStore = useConfigStore();
 const modelStore = useModelStore();
 const loading = ref(true);
 
@@ -32,7 +34,10 @@ const getCode = ()=>{
   });
   const params: SubmitParam = {
     node: nodes,
-    edge: edges
+    edge: edges,
+    loss: configStore.loss,
+    optimizer: configStore.optimizer,
+    hyperParameters: configStore.hyperParameters
   }
   submitAPI(params).then(res => {
     netCode.value = res.data.code;
