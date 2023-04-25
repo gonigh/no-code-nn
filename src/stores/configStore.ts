@@ -23,12 +23,12 @@ export const useConfigStore = defineStore('config', () => {
     loss: 'NLLLoss',
     optimizer: 'Adadelta',
     hyperParameters: {
-      batchSize: 64,
-      epochs: 14,
-      lr: 1.0,
-      gamma: 0.7,
-      seed: 1.0,
-      NoCUDA: false
+      batchSize: 64 as number,
+      epochs: 14 as number,
+      lr: 1.0 as number,
+      gamma: 0.7 as number,
+      seed: 1.0 as number,
+      NoCUDA: false as boolean
     }
   };
 });

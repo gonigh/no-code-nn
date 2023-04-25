@@ -238,8 +238,8 @@ export default {
                 "type": "option",
                 "name": "op_view",
                 "attr": {
-                    "h": 64,
-                    "w": -1
+                    "h": -1,
+                    "w": 7744
                 }
             }, {
                 "id": 10,

@@ -23,7 +23,7 @@ const handleSubmit = (show: boolean) => {
     });
     temp = false;
   }
-  modelStore.nodeList.forEach(node => {
+  modelStore.nodeList.forEach((node) => {
     if (node.state !== 0) {
       ElMessage({
         message: 'Abnormal node status',
@@ -31,9 +31,9 @@ const handleSubmit = (show: boolean) => {
       });
       temp = false;
     }
-  })
+  });
   for (let key in configStore.hyperParameters) {
-    if(configStore.hyperParameters[key] === '') {
+    if (configStore.hyperParameters[key] === '') {
       ElMessage({
         message: 'hyperparameter error',
         type: 'error'
@@ -43,7 +43,6 @@ const handleSubmit = (show: boolean) => {
   }
   showDialog.value = temp;
 };
-
 </script>
 <template>
   <div class="model-container">
@@ -53,26 +52,42 @@ const handleSubmit = (show: boolean) => {
     <div class="model-middle">
       <Graph @submit="handleSubmit"></Graph>
       <NoDrawer>
-          <ElForm class="config-list" label-width="100px">
-            <ElFormItem class="config-item" label="Loss">
-              <ElSelect v-model="configStore.loss">
-                <ElOption v-for="item in configStore.lossList" :key="item" :value="item" />
-              </ElSelect>
-            </ElFormItem>
-            <ElFormItem class="config-item" label="optimizer">
-              <ElSelect v-model="configStore.optimizer">
-                <ElOption v-for="item in configStore.optimizerList" :key="item" :value="item" />
-              </ElSelect>
-            </ElFormItem>
-            <ElFormItem class="config-item" v-for="key in Object.keys(configStore.hyperParameters)" :key="key"
-              :label="key">
-              <ElInput v-if="(typeof configStore.hyperParameters[key] !== 'boolean')" v-model:model-value="configStore.hyperParameters[key]"/>
-              <ElSelect v-else v-model="configStore.hyperParameters[key]">
-                <ElOption label="True" :value="true" />
-                <ElOption label="False" :value="false" />
-              </ElSelect>
-            </ElFormItem>
-          </ElForm>
+        <ElForm class="config-list" label-width="100px">
+          <ElFormItem class="config-item" label="Loss">
+            <ElSelect v-model="configStore.loss">
+              <ElOption
+                v-for="item in configStore.lossList"
+                :key="item"
+                :value="item"
+              />
+            </ElSelect>
+          </ElFormItem>
+          <ElFormItem class="config-item" label="optimizer">
+            <ElSelect v-model="configStore.optimizer">
+              <ElOption
+                v-for="item in configStore.optimizerList"
+                :key="item"
+                :value="item"
+              />
+            </ElSelect>
+          </ElFormItem>
+          <ElFormItem
+            class="config-item"
+            v-for="key in Object.keys(configStore.hyperParameters)"
+            :key="key"
+            :label="key"
+          >
+            <ElInput
+              v-if="typeof configStore.hyperParameters[key] !== 'boolean'"
+              v-model:model-value="configStore.hyperParameters[key]"
+              type="number"
+            />
+            <ElSelect v-else v-model="configStore.hyperParameters[key]">
+              <ElOption label="True" :value="true" />
+              <ElOption label="False" :value="false" />
+            </ElSelect>
+          </ElFormItem>
+        </ElForm>
       </NoDrawer>
     </div>
     <div class="model-right">

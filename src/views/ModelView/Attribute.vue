@@ -69,7 +69,7 @@ watch([() => modelStore.selectedId, () => modelStore.selectType], function () {
           v-if="typeof el.attr[key] !== 'boolean'"
           v-model:model-value="el.attr[key]"
           placeholder="Please enter parameters"
-          @change="handleAttrChange"
+          @input="handleAttrChange"
         />
         <ElSelect v-else v-model="el.attr[key]" @change="handleAttrChange">
           <ElOption label="True" :value="true" />
