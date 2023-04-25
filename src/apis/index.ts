@@ -5,4 +5,4 @@ const baseURL = 'http://localhost:8081';
 
 export const submitAPI = (params: SubmitParam)=>request.post(`${baseURL}/submit`,params);
 
-export const downloadAPI = ()=>request.get(`${baseURL}/download`,{});
+export const downloadAPI = (name: string)=>request.get(`${baseURL}/download_${name}`,{});

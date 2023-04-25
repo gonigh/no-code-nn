@@ -21,13 +21,13 @@ export const useConfigStore = defineStore('config', () => {
     ],
     optimizerList: ["Adam", "SGD", "Rprop", "Adamax", "Adagrad", "Adadelta"],
     loss: 'NLLLoss',
-    optimizer: 'Adam',
+    optimizer: 'Adadelta',
     hyperParameters: {
       batchSize: 64,
       epochs: 14,
-      lr: 1,
+      lr: 1.0,
       gamma: 0.7,
-      seed: 1,
+      seed: 1.0,
       NoCUDA: false
     }
   };

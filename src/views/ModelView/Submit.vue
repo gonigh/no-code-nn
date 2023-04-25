@@ -8,12 +8,15 @@ import { useConfigStore } from '@/stores/configStore';
 const props = defineProps<{ show: boolean }>();
 
 const netCode = ref('');
+const mainCode = ref('');
 const configStore = useConfigStore();
 const modelStore = useModelStore();
 const loading = ref(true);
 
+const activeName = ref('net');
+
 // 获取模型代码
-const getCode = ()=>{
+const getCode = () => {
   const nodes: NodeParam[] = modelStore.nodeList.map(item => {
     const node: NodeParam = {
       id: item.id,
@@ -40,22 +43,28 @@ const getCode = ()=>{
     hyperParameters: configStore.hyperParameters
   }
   submitAPI(params).then(res => {
-    netCode.value = res.data.code;
+    netCode.value = res.data.net;
+    mainCode.value = res.data.main;
     loading.value = false;
   })
 }
-
+const handleDownload = (res: any, name: string) => {
+  const blob = new Blob([res.data], { type: 'text/py' })
+  const url = window.URL.createObjectURL(blob) // 创建URL对象
+  const link = document.createElement('a') // 创建a标签
+  link.href = url // 设置a标签的下载链接
+  link.download = name // 设置文件名
+  document.body.appendChild(link) // 将a标签添加到文档中
+  link.click() // 触发点击事件进行下载
+  document.body.removeChild(link) // 下载完成后删除a标签
+}
 // 下载代码
-const downloadCode = ()=>{
-  downloadAPI().then(res=>{
-    const blob = new Blob([res.data], { type: 'text/py' }) // 将响应数据转换成Blob对象
-    const url = window.URL.createObjectURL(blob) // 创建URL对象
-    const link = document.createElement('a') // 创建a标签
-    link.href = url // 设置a标签的下载链接
-    link.download = 'net.py' // 设置文件名
-    document.body.appendChild(link) // 将a标签添加到文档中
-    link.click() // 触发点击事件进行下载
-    document.body.removeChild(link) // 下载完成后删除a标签
+const downloadCode = () => {
+  downloadAPI('net').then(res => {
+    handleDownload(res, 'net.py');
+  });
+  downloadAPI('main').then(res => {
+    handleDownload(res, 'main.py');
   });
 };
 
@@ -66,13 +75,20 @@ onMounted(() => {
 <template>
   <ElSkeleton :loading="loading" animated>
     <template #default>
-      <div>
-        <ElScrollbar max-height="600" v-highlight>
-          <pre><code>{{ netCode }}</code></pre>
-        </ElScrollbar>
-        <div class="buttons">
-          <ElButton @click="downloadCode">Download</ElButton>
-        </div>
+      <el-tabs v-model="activeName" type="card">
+        <el-tab-pane label="net.py" name="net">
+          <ElScrollbar max-height="500" v-highlight>
+            <pre><code>{{ netCode }}</code></pre>
+          </ElScrollbar>
+        </el-tab-pane>
+        <el-tab-pane label="main.py" name="main">
+          <ElScrollbar max-height="500" v-highlight>
+            <pre><code>{{ mainCode }}</code></pre>
+          </ElScrollbar>
+        </el-tab-pane>
+      </el-tabs>
+      <div class="buttons">
+        <ElButton @click="downloadCode">Download</ElButton>
       </div>
     </template>
   </ElSkeleton>
